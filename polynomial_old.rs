@@ -69,7 +69,6 @@ fn add_poly(a: Polynomial, b: Polynomial) -> Polynomial {
     return c;
 }
 
-#[allow(dead_code)]
 fn sub_poly(a: Polynomial, mut b: Polynomial) -> Polynomial {
     for mono in &mut b.monomial {
         mono.coef = mono.coef * (-1);
@@ -93,11 +92,11 @@ fn mul_poly(a: Polynomial, b: Polynomial) -> Polynomial {
 }
 
 fn main() {
-    let coef = -5;
+    let coef = 5;
     let expo = 3;
     let a = Monomial{coef, expo};
 
-    let coef = 8;
+    let coef = -8;
     let expo = 2;
     let b = Monomial{coef, expo};
 
@@ -109,7 +108,7 @@ fn main() {
     print_poly(poly.clone());
     print_poly(poly2.clone());
 
-    //poly = sub_poly(poly, poly2);
+    poly = sub_poly(poly, poly2.clone());
     poly = mul_poly(poly, poly2);
     print_poly(poly.clone());
 }
