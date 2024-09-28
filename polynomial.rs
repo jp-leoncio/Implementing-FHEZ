@@ -57,6 +57,63 @@ fn mul_poly(a: Polynomial, b: Polynomial) -> Polynomial {
     return ret;
 }
 
+fn add_eval(alpha: i32, a: Polynomial, b: Polynomial) -> bool {
+    let c = add_poly(a.clone(), b.clone());
+    let mut value_ab = 0i32;
+    let mut value_c = 0i32;
+    let mut x = 1i32;
+    let mut y = 1i32;
+    let mut z = 1i32;
+
+    for i in 0..(c.n as usize) {
+        value_c += c.coeficients[i] * x;
+        x *= alpha;
+    }
+    for i in 0..(a.n as usize) {
+        value_ab += a.coeficients[i] * y;
+        y *= alpha;
+    }
+    for i in 0..(b.n as usize) {
+        value_ab += b.coeficients[i] * z;
+        z *= alpha;
+    }
+
+    if value_ab == value_c {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+fn mul_eval(alpha: i32, a: Polynomial, b: Polynomial) -> bool {
+    let c = mul_poly(a.clone(), b.clone());
+    let mut value_a = 0i32;
+    let mut value_b = 0i32;
+    let mut value_c = 0i32;
+    let mut x = 1i32;
+    let mut y = 1i32;
+    let mut z = 1i32;
+
+    for i in 0..(c.n as usize) {
+        value_c += c.coeficients[i] * x;
+        x *= alpha;
+    }
+    for i in 0..(a.n as usize) {
+        value_a += a.coeficients[i] * y;
+        y *= alpha;
+    }
+    for i in 0..(b.n as usize) {
+        value_b += b.coeficients[i] * z;
+        z *= alpha;
+    }
+
+    if value_a * value_b == value_c {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 fn main() {
     let mut coef = vec![2, 6, 7, 0, 13];
     let a = Polynomial{n: 5, coeficients: coef};
@@ -69,4 +126,6 @@ fn main() {
     print_poly(d.clone());
     let e = mul_poly(a.clone(), b.clone());
     print_poly(e.clone());
+    println!("{:?}", add_eval(2, a.clone(), b.clone()));
+    println!("{:?}", mul_eval(2, a.clone(), b.clone()));
 }
