@@ -4,8 +4,8 @@ use rand::Rng;
 
 #[derive(Clone, Debug)]
 pub struct Polynomial {
-    pub n: i32,
-    pub coeficients: Vec<i32>,
+    pub n: i64,
+    pub coeficients: Vec<i64>,
 }
 
 pub fn print_poly(a: Polynomial) {
@@ -58,13 +58,13 @@ pub fn mul_poly(a: Polynomial, b: Polynomial) -> Polynomial {
     return ret;
 }
 
-pub fn add_eval(alpha: i32, a: Polynomial, b: Polynomial) -> bool {
+pub fn add_eval(alpha: i64, a: Polynomial, b: Polynomial) -> bool {
     let c = add_poly(a.clone(), b.clone());
-    let mut value_ab = 0i32;
-    let mut value_c = 0i32;
-    let mut x = 1i32;
-    let mut y = 1i32;
-    let mut z = 1i32;
+    let mut value_ab = 0i64;
+    let mut value_c = 0i64;
+    let mut x = 1i64;
+    let mut y = 1i64;
+    let mut z = 1i64;
 
     for i in 0..(c.n as usize) {
         value_c += c.coeficients[i] * x;
@@ -86,14 +86,14 @@ pub fn add_eval(alpha: i32, a: Polynomial, b: Polynomial) -> bool {
     }
 }
 
-pub fn mul_eval(alpha: i32, a: Polynomial, b: Polynomial) -> bool {
+pub fn mul_eval(alpha: i64, a: Polynomial, b: Polynomial) -> bool {
     let c = mul_poly(a.clone(), b.clone());
-    let mut value_a = 0i32;
-    let mut value_b = 0i32;
-    let mut value_c = 0i32;
-    let mut x = 1i32;
-    let mut y = 1i32;
-    let mut z = 1i32;
+    let mut value_a = 0i64;
+    let mut value_b = 0i64;
+    let mut value_c = 0i64;
+    let mut x = 1i64;
+    let mut y = 1i64;
+    let mut z = 1i64;
 
     for i in 0..(c.n as usize) {
         value_c += c.coeficients[i] * x;
@@ -115,14 +115,15 @@ pub fn mul_eval(alpha: i32, a: Polynomial, b: Polynomial) -> bool {
     }
 }
 
-pub fn rand_poly() {
+pub fn rand_poly() -> Polynomial {
     let mut rng = rand::thread_rng();
-
-    let n1: u8 = rng.gen();
-    let n2: u16 = rng.gen();
-    println!("Random u8: {}", n1);
-    println!("Random u16: {}", n2);
-    println!("Random u32: {}", rng.gen::<u32>());
-    println!("Random i32: {}", rng.gen::<i32>());
-    println!("Random float: {}", rng.gen::<f64>());
+    let tam: i64 = rng.gen_range(1..10);
+    let mut v = vec![0; tam as usize];
+    
+    for i in 0..tam as usize {
+        let x = rng.gen_range(-16..16);
+        v[i] = x;
+    }
+    let poly = Polynomial{n: tam, coeficients: v};
+    return poly;
 }
