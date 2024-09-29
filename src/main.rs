@@ -22,6 +22,6 @@ fn main() {
     print!("Polinômio a * b: ");
     print_poly(e.clone());
 
-    println!("{:?}", add_eval(10, a.clone(), b.clone()));
-    println!("{:?}", mul_eval(10, a.clone(), b.clone()));
+    println!("{:?}", add_eval(100, a.clone(), b.clone()));
+    println!("{:?}", mul_eval(100, a.clone(), b.clone()));
 }
