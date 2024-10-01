@@ -5,3 +5,6 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
+concrete-fft = "0.5.1"
+dyn-stack = "0.10.0"
+num-complex = "0.4.6"
