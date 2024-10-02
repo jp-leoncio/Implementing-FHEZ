@@ -12,7 +12,7 @@ struct Polynomial {
     monomial: Vec<Monomial>,
 }
 
-fn print_poly(poly: Polynomial) {
+fn print_p(poly: Polynomial) {
     let mut real_count = 1;
     let mut count = poly.n;
     for mono in &poly.monomial {
@@ -30,7 +30,7 @@ fn print_poly(poly: Polynomial) {
     println!(" ");
 }
 
-fn add_poly(a: Polynomial, b: Polynomial) -> Polynomial {
+fn add(a: Polynomial, b: Polynomial) -> Polynomial {
     let mut v = vec!();
 
     let mut mon1 = a.monomial.clone();
@@ -69,14 +69,14 @@ fn add_poly(a: Polynomial, b: Polynomial) -> Polynomial {
     return c;
 }
 
-fn sub_poly(a: Polynomial, mut b: Polynomial) -> Polynomial {
+fn sub(a: Polynomial, mut b: Polynomial) -> Polynomial {
     for mono in &mut b.monomial {
         mono.coef = mono.coef * (-1);
     }
     return add_poly(a, b);
 }
 
-fn mul_poly(a: Polynomial, b: Polynomial) -> Polynomial {
+fn mul(a: Polynomial, b: Polynomial) -> Polynomial {
     let mut v = vec!();
     let mut mono = Monomial{coef: 0, expo: 0};
 
@@ -91,7 +91,7 @@ fn mul_poly(a: Polynomial, b: Polynomial) -> Polynomial {
     return c;
 }
 
-fn main() {
+/*fn main() {
     let coef = 5;
     let expo = 3;
     let a = Monomial{coef, expo};
@@ -111,4 +111,4 @@ fn main() {
     poly = sub_poly(poly, poly2.clone());
     poly = mul_poly(poly, poly2);
     print_poly(poly.clone());
-}
+}*/

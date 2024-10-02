@@ -1,27 +1,21 @@
 mod polynomial;
 use crate::polynomial::*;
+use std::time::Instant;
+use rand::Rng;
 
 fn main() {
-    let a = rand_poly();
-    let b = rand_poly();
+    let now = Instant::now();
 
-    print!("Polinômio a: ");
-    print_poly(a.clone());
-    print!("Polinômio b: ");
-    print_poly(b.clone());
+    let mut rng = rand::thread_rng();
+    let tam = 100000;
+    for _ in 0..(tam as usize) {
+        let a = rand_poly();
+        let b = rand_poly();
+        let x = rng.gen_range(-10..10);
+        let ope = rng.gen_range(1..4);
+        eval(x, a, b, ope);
+    }
 
-    let c = add_poly(a.clone(), b.clone());
-    print!("Polinômio a + b: ");
-    print_poly(c.clone());
-
-    let d = sub_poly(c.clone(), b.clone());
-    print!("Polinômio a - b: ");
-    print_poly(d.clone());
-
-    let e = mul_poly(a.clone(), b.clone());
-    print!("Polinômio a * b: ");
-    print_poly(e.clone());
-
-    println!("{:?}", add_eval(100, a.clone(), b.clone()));
-    println!("{:?}", mul_eval(100, a.clone(), b.clone()));
+    let elapsed_time = now.elapsed();
+    println!("Running the cycle took {} milliseconds.", elapsed_time.as_millis());
 }
