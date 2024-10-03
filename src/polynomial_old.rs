@@ -1,36 +1,31 @@
 use std::cmp::max;
 use std::convert::TryInto;
+use rand::Rng;
 
 #[derive(Clone, Debug, Copy)]
-struct Monomial {
-    coef: i32,
-    expo: i32,
+pub struct Monomial {
+    coef: i128,
+    expo: i128,
 }
 #[derive(Clone, Debug)]
-struct Polynomial {
-    n: i32,
+pub struct PolynomialOld {
+    n: i128,
     monomial: Vec<Monomial>,
 }
 
-fn print_p(poly: Polynomial) {
-    let mut real_count = 1;
-    let mut count = poly.n;
-    for mono in &poly.monomial {
-        if mono.coef == 0 {
-            count -= 1;
+pub fn print_old(poly: PolynomialOld) {
+    let mut i = (poly.n - 1) as usize;
+    while i > 0 {
+        if poly.monomial[i].coef != 0 {
+            print!("{:?}x^{:?} ", poly.monomial[i].coef, poly.monomial[i].expo);
+            print!(" + ");
         }
-        else if mono.coef != 0 {
-            print!("{:?}x^{:?} ", mono.coef, mono.expo);
-            if real_count < count {
-                print!("+ "); 
-            }
-            real_count += 1;
-        }
+        i -= 1;
     }
-    println!(" ");
+    println!("{:?} ", poly.monomial[0].coef);
 }
 
-fn add(a: Polynomial, b: Polynomial) -> Polynomial {
+pub fn add_old(a: PolynomialOld, b: PolynomialOld) -> PolynomialOld {
     let mut v = vec!();
 
     let mut mon1 = a.monomial.clone();
@@ -65,18 +60,18 @@ fn add(a: Polynomial, b: Polynomial) -> Polynomial {
             v.push(mon2[k].clone());
         }
     }
-    let c = Polynomial{n: max(a.n, b.n), monomial: v.clone()};
+    let c = PolynomialOld{n: max(a.n, b.n), monomial: v.clone()};
     return c;
 }
 
-fn sub(a: Polynomial, mut b: Polynomial) -> Polynomial {
+pub fn sub_old(a: PolynomialOld, mut b: PolynomialOld) -> PolynomialOld {
     for mono in &mut b.monomial {
         mono.coef = mono.coef * (-1);
     }
-    return add_poly(a, b);
+    return add_old(a, b);
 }
 
-fn mul(a: Polynomial, b: Polynomial) -> Polynomial {
+pub fn mul_old(a: PolynomialOld, b: PolynomialOld) -> PolynomialOld {
     let mut v = vec!();
     let mut mono = Monomial{coef: 0, expo: 0};
 
@@ -87,28 +82,34 @@ fn mul(a: Polynomial, b: Polynomial) -> Polynomial {
             v.push(mono.clone());
         }
     }
-    let c = Polynomial{n: max(a.n, b.n), monomial: v.clone()};
+    let c = PolynomialOld{n: max(a.n, b.n), monomial: v.clone()};
     return c;
 }
 
-/*fn main() {
-    let coef = 5;
-    let expo = 3;
-    let a = Monomial{coef, expo};
+pub fn eval_old(a: PolynomialOld, b: PolynomialOld, operation: i128) -> PolynomialOld {
+    match operation {
+        1 => add_old(a, b),
+            
+        2 => sub_old(a, b),
 
-    let coef = -8;
-    let expo = 2;
-    let b = Monomial{coef, expo};
+        3 => mul_old(a, b),
 
-    let mut vector = vec!(a.clone());
-    let mut poly = Polynomial{n:1, monomial: vector.clone()};
-    vector.push(b.clone());
-    let poly2 = Polynomial{n:2, monomial: vector.clone()};
+        _ => return a,
+    }
+}
 
-    print_poly(poly.clone());
-    print_poly(poly2.clone());
-
-    poly = sub_poly(poly, poly2.clone());
-    poly = mul_poly(poly, poly2);
-    print_poly(poly.clone());
-}*/
+pub fn rand_old() -> PolynomialOld {
+    let mut rng = rand::thread_rng();
+    let tam: i128 = rng.gen_range(1..15);
+    
+    let mut v = vec!();
+    let mut mono = Monomial{coef: 0, expo: 0};
+    
+    for i in 0..tam as usize {
+        mono.coef = rng.gen_range(-1000..1000);
+        mono.expo = i as i128;
+        v.push(mono.clone());
+    }
+    let poly = PolynomialOld{n: tam, monomial: v.clone()};
+    return poly;
+}

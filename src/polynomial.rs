@@ -62,7 +62,7 @@ fn add_eval(alpha: i128, a: Polynomial, b: Polynomial) {
     assert_eq!(value_ab, value_c);
 }
 
-pub fn _sub_poly(a: Polynomial, b: Polynomial) -> Polynomial {
+pub fn sub_poly(a: Polynomial, b: Polynomial) -> Polynomial {
     let mut minus = b.clone();
     for i in 0..(b.n as usize) {
         minus.coeficients[i] *= -1; 
@@ -114,7 +114,7 @@ fn mul_eval(alpha: i128, a: Polynomial, b: Polynomial) {
     assert_eq!(value_a * value_b, value_c);
 }
 
-pub fn eval(alpha: i128, a: Polynomial, b: Polynomial, operation: i32) {
+/*pub fn eval(alpha: i128, a: Polynomial, b: Polynomial, operation: i32) {
     match operation {
         1 => add_eval(alpha, a, b),
             
@@ -123,6 +123,18 @@ pub fn eval(alpha: i128, a: Polynomial, b: Polynomial, operation: i32) {
         3 => mul_eval(alpha, a, b),
 
         _ => println!("Don't care"),
+    }
+}*/
+
+pub fn eval(a: Polynomial, b: Polynomial, operation: i32) -> Polynomial {
+    match operation {
+        1 => add_poly(a, b),
+            
+        2 => sub_poly(a, b),
+
+        3 => mul_poly(a, b),
+
+        _ => return a,
     }
 }
 
