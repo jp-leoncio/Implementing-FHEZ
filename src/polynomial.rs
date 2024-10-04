@@ -4,8 +4,8 @@ use rand::Rng;
 
 #[derive(Clone, Debug)]
 pub struct Polynomial {
-    pub n: i128,
-    pub coeficients: Vec<i128>,
+    pub n: i32,
+    pub coeficients: Vec<i32>,
 }
 
 pub fn _print_poly(a: Polynomial) {
@@ -39,22 +39,22 @@ pub fn add_poly(a: Polynomial, b: Polynomial) -> Polynomial {
     return poly;
 }
 
-fn add_eval(alpha: i128, a: Polynomial, b: Polynomial) {
+fn _add_eval(alpha: i32, a: Polynomial, b: Polynomial) {
     let c = add_poly(a.clone(), b.clone());
-    let mut value_ab = 0i128;
-    let mut value_c = 0i128;
-    let mut x = 1i128;
+    let mut value_ab = 0i32;
+    let mut value_c = 0i32;
+    let mut x = 1i32;
 
     for i in 0..(c.n as usize) {
         value_c += c.coeficients[i] * x;
         x *= alpha;
     }
-    x = 1i128;
+    x = 1i32;
     for i in 0..(a.n as usize) {
         value_ab += a.coeficients[i] * x;
         x *= alpha;
     }
-    x = 1i128;
+    x = 1i32;
     for i in 0..(b.n as usize) {
         value_ab += b.coeficients[i] * x;
         x *= alpha;
@@ -70,18 +70,18 @@ pub fn sub_poly(a: Polynomial, b: Polynomial) -> Polynomial {
     return add_poly(a, minus);
 }
 
-fn sub_eval(alpha: i128, a: Polynomial, b: Polynomial) {
+fn _sub_eval(alpha: i32, a: Polynomial, b: Polynomial) {
     let mut minus = b.clone();
     for i in 0..(b.n as usize) {
         minus.coeficients[i] *= -1; 
     }
 
-    return add_eval(alpha, a, minus);
+    return _add_eval(alpha, a, minus);
 }
 
 pub fn mul_poly(a: Polynomial, b: Polynomial) -> Polynomial {
-    let tam = a.n + b.n - 1;
-    let mut ret = Polynomial{n: tam, coeficients: vec![0; tam as usize]};
+    let n = a.n + b.n - 1;
+    let mut ret = Polynomial{n, coeficients: vec![0; n as usize]};
     for i in 0..(a.n as usize) {
         for j in 0..(b.n as usize) {
             ret.coeficients[i + j] += a.coeficients[i] * b.coeficients[j];
@@ -90,14 +90,14 @@ pub fn mul_poly(a: Polynomial, b: Polynomial) -> Polynomial {
     return ret;
 }
 
-fn mul_eval(alpha: i128, a: Polynomial, b: Polynomial) {
+fn _mul_eval(alpha: i32, a: Polynomial, b: Polynomial) {
     let c = mul_poly(a.clone(), b.clone());
-    let mut value_a = 0i128;
-    let mut value_b = 0i128;
-    let mut value_c = 0i128;
-    let mut x = 1i128;
-    let mut y = 1i128;
-    let mut z = 1i128;
+    let mut value_a = 0i32;
+    let mut value_b = 0i32;
+    let mut value_c = 0i32;
+    let mut x = 1i32;
+    let mut y = 1i32;
+    let mut z = 1i32;
 
     for i in 0..(c.n as usize) {
         value_c += c.coeficients[i] * x;
@@ -114,7 +114,7 @@ fn mul_eval(alpha: i128, a: Polynomial, b: Polynomial) {
     assert_eq!(value_a * value_b, value_c);
 }
 
-/*pub fn eval(alpha: i128, a: Polynomial, b: Polynomial, operation: i32) {
+/*pub fn eval(alpha: i32, a: Polynomial, b: Polynomial, operation: i32) {
     match operation {
         1 => add_eval(alpha, a, b),
             
@@ -140,13 +140,13 @@ pub fn eval(a: Polynomial, b: Polynomial, operation: i32) -> Polynomial {
 
 pub fn rand_poly() -> Polynomial {
     let mut rng = rand::thread_rng();
-    let tam: i128 = rng.gen_range(1..15);
-    let mut v = vec![0; tam as usize];
+    let n = 1000;
+    let mut v = vec![0; n as usize];
     
-    for i in 0..tam as usize {
-        let coef = rng.gen_range(-1000..1000);
+    for i in 0..n as usize {
+        let coef = rng.gen_range(-100..100);
         v[i] = coef;
     }
-    let poly = Polynomial{n: tam, coeficients: v};
+    let poly = Polynomial{n, coeficients: v};
     return poly;
 }

@@ -4,16 +4,16 @@ use rand::Rng;
 
 #[derive(Clone, Debug, Copy)]
 pub struct Monomial {
-    coef: i128,
-    expo: i128,
+    coef: i32,
+    expo: i32,
 }
 #[derive(Clone, Debug)]
 pub struct PolynomialOld {
-    n: i128,
+    n: i32,
     monomial: Vec<Monomial>,
 }
 
-pub fn print_old(poly: PolynomialOld) {
+pub fn _print_old(poly: PolynomialOld) {
     let mut i = (poly.n - 1) as usize;
     while i > 0 {
         if poly.monomial[i].coef != 0 {
@@ -86,7 +86,7 @@ pub fn mul_old(a: PolynomialOld, b: PolynomialOld) -> PolynomialOld {
     return c;
 }
 
-pub fn eval_old(a: PolynomialOld, b: PolynomialOld, operation: i128) -> PolynomialOld {
+pub fn eval_old(a: PolynomialOld, b: PolynomialOld, operation: i32) -> PolynomialOld {
     match operation {
         1 => add_old(a, b),
             
@@ -100,16 +100,16 @@ pub fn eval_old(a: PolynomialOld, b: PolynomialOld, operation: i128) -> Polynomi
 
 pub fn rand_old() -> PolynomialOld {
     let mut rng = rand::thread_rng();
-    let tam: i128 = rng.gen_range(1..15);
+    let n = 1000;
     
     let mut v = vec!();
     let mut mono = Monomial{coef: 0, expo: 0};
     
-    for i in 0..tam as usize {
-        mono.coef = rng.gen_range(-1000..1000);
-        mono.expo = i as i128;
+    for i in 0..n as usize {
+        mono.coef = rng.gen_range(-100..100);
+        mono.expo = i as i32;
         v.push(mono.clone());
     }
-    let poly = PolynomialOld{n: tam, monomial: v.clone()};
+    let poly = PolynomialOld{n, monomial: v.clone()};
     return poly;
 }
