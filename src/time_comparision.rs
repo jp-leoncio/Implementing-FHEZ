@@ -35,13 +35,13 @@ pub fn comparision() {
     //let ope = rng.gen_range(1..4);
     let ope = 3;
     let mut _rng = ChaCha8Rng::seed_from_u64(1);
-    let num_polynomials = 100;
+    let num_samples = 100;
     let num_coeficients = 4000;
     println!("Running brenchmark with the parameters");
-    println!("number of polynomials = {num_polynomials}");
+    println!("number of samples = {num_samples}");
     println!("number of coefficients = {num_coeficients}");
     println!("started : Coeficient Generation");
-    let pols = random_coeficients(num_coeficients, 2*num_polynomials, _rng);
+    let pols = random_coeficients(num_coeficients, 2*num_samples, _rng);
     println!("finished: Coeficient Generation");
 
     println!("started : Initialization of polynomials");
@@ -50,14 +50,14 @@ pub fn comparision() {
     println!("finished: Initialization of polynomials");
 
     let now = Instant::now();
-    for i in 0..num_polynomials {
+    for i in 0..num_samples {
         eval_old(&polsold[2*i], &polsold[2*i+1],ope);
     }
     let elapsed_time = now.elapsed();
     println!("Running the old cycle took {} seconds.", elapsed_time.as_secs());
 
     let now = Instant::now();
-    for i in 0..num_polynomials {
+    for i in 0..num_samples {
         eval(&polsnew[2*i], &polsnew[2*i+1], ope);
     }
     let elapsed_time = now.elapsed();
