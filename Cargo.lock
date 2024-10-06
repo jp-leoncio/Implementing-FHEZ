@@ -10,6 +10,7 @@ dependencies = [
  "dyn-stack",
  "num-complex",
  "rand",
+ "rand_chacha",
 ]
 
 [[package]]
