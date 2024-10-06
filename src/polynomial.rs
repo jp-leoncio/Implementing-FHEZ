@@ -1,6 +1,9 @@
 use std::cmp::max;
 use std::cmp::min;
 
+use rand::rngs::ThreadRng;
+use rand::Rng;
+
 #[derive(Clone, Debug)]
 pub struct Polynomial {
     pub n: i32,
@@ -80,17 +83,43 @@ fn _sub_eval(alpha: i32, a: &Polynomial, b: &Polynomial) {
 
 pub fn mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let n = a.n + b.n - 1;
-    let mut ret = Polynomial{n, coeficients: vec![0; n as usize]};
-    a.coeficients.iter().enumerate().flat_map(move |(i, a_coef)| {
-        b.coeficients.iter().enumerate().map(move |(j, b_coef)| {
-            (i + j, a_coef * b_coef)
+    let mut ret = Polynomial {
+        n,
+        coeficients: vec![0; n as usize],
+    };
+    a.coeficients
+        .iter()
+        .enumerate()
+        .flat_map(move |(i, a_coef)| {
+            b.coeficients
+                .iter()
+                .enumerate()
+                .map(move |(j, b_coef)| (i + j, a_coef * b_coef))
         })
-    }).for_each(|(i, coef)| {
-        ret.coeficients[i] += coef;
-    });
+        .for_each(|(i, coef)| {
+            ret.coeficients[i] += coef;
+        });
     return ret;
 }
+pub fn par_mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
+    let n = a.n + b.n - 1;
+    let coeficients = a
+        .coeficients
+        .par_iter()
+        .enumerate()
+        .flat_map(|(i, a_coef)| {
+            b.coeficients
+                .par_iter()
+                .enumerate()
+                .map(move |(j, b_coef)| (i + j, a_coef * b_coef))
+        })
+        .fold_with(vec![0; n as usize], |mut vec, (i, coef)| {
+            vec[i] += coef;
+            vec
+        }).find_first(|_| true).unwrap();
 
+    Polynomial { n, coeficients }
+}
 fn _mul_eval(alpha: i32, a: &Polynomial, b: &Polynomial) {
     let c = mul_poly(a, b);
     let mut value_a = 0i32;
@@ -139,11 +168,25 @@ pub fn eval(a: &Polynomial, b: &Polynomial, operation: i32) -> Polynomial {
     }
 }
 
+use rayon::prelude::*;
+
+
+
 impl Polynomial {
-    pub fn new(coeficients : &Vec<i32>, qt_coeficients : i32) -> Polynomial {
+    pub fn new(coeficients: &Vec<i32>, qt_coeficients: i32) -> Polynomial {
         return Polynomial {
-            n: qt_coeficients, 
-            coeficients: coeficients.clone()
+            n: qt_coeficients,
+            coeficients: coeficients.clone(),
+        };
+    }
+    pub fn new_rand(rng: &mut ThreadRng, num_coeficients: usize) -> Self {
+        let mut coeficients = vec![0; num_coeficients];
+        for i in 0..num_coeficients {
+            coeficients[i] = rng.gen_range(-100..100);
+        }
+        return Polynomial {
+            coeficients,
+            n: num_coeficients as i32,
         };
     }
 }
