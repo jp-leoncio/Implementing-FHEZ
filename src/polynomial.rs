@@ -1,8 +1,8 @@
 use std::cmp::max;
 use std::cmp::min;
-
 use rand::rngs::ThreadRng;
 use rand::Rng;
+use rayon::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct Polynomial {
@@ -168,7 +168,6 @@ pub fn eval(a: &Polynomial, b: &Polynomial, operation: i32) -> Polynomial {
     }
 }
 
-use rayon::prelude::*;
 
 
 
