@@ -8,3 +8,16 @@ rand = "0.8.5"
 concrete-fft = "0.5.1"
 dyn-stack = "0.10.0"
 num-complex = "0.4.6"
+rand_chacha = "0.3.1"
+divan = "0.1.14"
+rayon = "1.10.0"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+[[bench]]
+name = "polynomial"
+path = "src/bench.rs"
+harness = false
+

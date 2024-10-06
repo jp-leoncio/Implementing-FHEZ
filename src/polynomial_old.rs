@@ -1,7 +1,6 @@
 use std::cmp::max;
 use std::convert::TryInto;
-use rand::Rng;
-
+ 
 #[derive(Clone, Debug, Copy)]
 pub struct Monomial {
     coef: i32,
@@ -13,7 +12,7 @@ pub struct PolynomialOld {
     monomial: Vec<Monomial>,
 }
 
-pub fn _print_old(poly: PolynomialOld) {
+pub fn _print_old(poly: &PolynomialOld) {
     let mut i = (poly.n - 1) as usize;
     while i > 0 {
         if poly.monomial[i].coef != 0 {
@@ -25,7 +24,7 @@ pub fn _print_old(poly: PolynomialOld) {
     println!("{:?} ", poly.monomial[0].coef);
 }
 
-pub fn add_old(a: PolynomialOld, b: PolynomialOld) -> PolynomialOld {
+pub fn add_old(a: &PolynomialOld, b: &PolynomialOld) -> PolynomialOld {
     let mut v = vec!();
 
     let mut mon1 = a.monomial.clone();
@@ -64,14 +63,15 @@ pub fn add_old(a: PolynomialOld, b: PolynomialOld) -> PolynomialOld {
     return c;
 }
 
-pub fn sub_old(a: PolynomialOld, mut b: PolynomialOld) -> PolynomialOld {
-    for mono in &mut b.monomial {
+pub fn sub_old(a: &PolynomialOld, b: &PolynomialOld) -> PolynomialOld {
+    let mut aux = b.clone();
+    for mono in  &mut aux.monomial {
         mono.coef = mono.coef * (-1);
     }
     return add_old(a, b);
 }
 
-pub fn mul_old(a: PolynomialOld, b: PolynomialOld) -> PolynomialOld {
+pub fn mul_old(a: &PolynomialOld, b: &PolynomialOld) -> PolynomialOld {
     let mut v = vec!();
     let mut mono = Monomial{coef: 0, expo: 0};
 
@@ -86,7 +86,7 @@ pub fn mul_old(a: PolynomialOld, b: PolynomialOld) -> PolynomialOld {
     return c;
 }
 
-pub fn eval_old(a: PolynomialOld, b: PolynomialOld, operation: i32) -> PolynomialOld {
+pub fn eval_old(a: &PolynomialOld, b: &PolynomialOld, operation: i32) -> PolynomialOld {
     match operation {
         1 => add_old(a, b),
             
@@ -94,22 +94,27 @@ pub fn eval_old(a: PolynomialOld, b: PolynomialOld, operation: i32) -> Polynomia
 
         3 => mul_old(a, b),
 
-        _ => return a,
+        _ => return a.clone(),
     }
 }
 
-pub fn rand_old() -> PolynomialOld {
-    let mut rng = rand::thread_rng();
-    let n = 1000;
-    
-    let mut v = vec!();
-    let mut mono = Monomial{coef: 0, expo: 0};
-    
-    for i in 0..n as usize {
-        mono.coef = rng.gen_range(-100..100);
-        mono.expo = i as i32;
-        v.push(mono.clone());
+impl PolynomialOld {
+    pub fn new(coeficients : &Vec<i32>, n : i32) -> PolynomialOld {
+        let monomial = coeficients
+            .iter()
+            .enumerate()
+            .map(|(expo, coef)| {
+                Monomial { 
+                    expo: expo as i32, 
+                    coef: *coef 
+                }
+            }
+        ).collect();
+
+        return PolynomialOld {
+            n, 
+            monomial
+        };
     }
-    let poly = PolynomialOld{n, monomial: v.clone()};
-    return poly;
 }
+
