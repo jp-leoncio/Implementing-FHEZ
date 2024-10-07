@@ -1,5 +1,8 @@
 use std::cmp::max;
+use std::cmp::min;
 use std::convert::TryInto;
+
+use rayon::iter::MinLen;
  
 #[derive(Clone, Debug, Copy)]
 pub struct Monomial {
@@ -60,6 +63,29 @@ pub fn add_old(a: &PolynomialOld, b: &PolynomialOld) -> PolynomialOld {
         }
     }
     let c = PolynomialOld{n: max(a.n, b.n), monomial: v.clone()};
+    return c;
+}
+
+pub fn add_old_new(a: &PolynomialOld, b: &PolynomialOld) -> PolynomialOld {
+    let mut v = vec![Monomial{expo: 0, coef: 0}; max(a.n, b.n) as usize];
+    
+    let ini = min(a.n, b.n) as usize;
+    for i in 0..ini {
+        v[i].coef = a.monomial[i].coef + b.monomial[i].coef;
+        v[i].expo = i as i32;
+    }
+
+    for i in ini..(a.n as usize) {
+        v[i].coef = a.monomial[i].coef;
+        v[i].expo = i as i32;
+    }
+
+    for i in ini..(b.n as usize) {
+        v[i].coef = b.monomial[i].coef;
+        v[i].expo = i as i32;
+    }
+
+    let mut c = PolynomialOld{n: max(a.n, b.n), monomial: v};
     return c;
 }
 

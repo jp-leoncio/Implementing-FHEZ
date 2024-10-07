@@ -81,6 +81,17 @@ fn _sub_eval(alpha: i32, a: &Polynomial, b: &Polynomial) {
     return _add_eval(alpha, a, &minus);
 }
 
+pub fn mul_poly_naive(a: &Polynomial, b: &Polynomial) -> Polynomial {
+    let tam = a.n + b.n - 1;
+    let mut ret = Polynomial{n: tam, coeficients: vec![0; tam as usize]};
+    for i in 0..(a.n as usize) {
+        for j in 0..(b.n as usize) {
+            ret.coeficients[i + j] += a.coeficients[i] * b.coeficients[j];
+        }
+    }    
+    return ret;
+}
+
 pub fn mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let n = a.n + b.n - 1;
     let mut ret = Polynomial {
@@ -101,6 +112,7 @@ pub fn mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
         });
     return ret;
 }
+
 pub fn par_mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let n = a.n + b.n - 1;
     let coeficients = a
@@ -167,9 +179,6 @@ pub fn eval(a: &Polynomial, b: &Polynomial, operation: i32) -> Polynomial {
         _ => return a.clone(),
     }
 }
-
-
-
 
 impl Polynomial {
     pub fn new(coeficients: &Vec<i32>, qt_coeficients: i32) -> Polynomial {

@@ -7,7 +7,6 @@ use rand::SeedableRng;
 use rand_chacha;
 use rand_chacha::ChaCha8Rng; 
 
-
 fn random_coeficients(num_coeficients: usize, num_polynomials: usize, mut _rng: ChaCha8Rng) -> Vec<Vec<i32>> {
     let mut pols = vec![vec![0; num_coeficients]; num_polynomials];
     for i in 0..num_polynomials  {
@@ -17,6 +16,7 @@ fn random_coeficients(num_coeficients: usize, num_polynomials: usize, mut _rng: 
     }
     pols
 }
+
 fn coeficients_to_polynomials(pols: &Vec<Vec<i32>>, qt_coeficients: usize) -> Vec<Polynomial> {
     pols.iter()
         .map(|coeficients| Polynomial::new(&coeficients, qt_coeficients as i32))
@@ -29,13 +29,10 @@ fn coeficients_to_polynomials_old(pols: Vec<Vec<i32>>, qt_coeficients: usize) ->
         .collect()
 }
 
-
 pub fn comparision() {
-    
-    //let ope = rng.gen_range(1..4);
     let ope = 3;
     let mut _rng = ChaCha8Rng::seed_from_u64(1);
-    let num_samples = 100;
+    let num_samples = 10;
     let num_coeficients = 4000;
     println!("Running brenchmark with the parameters");
     println!("number of samples = {num_samples}");
@@ -49,22 +46,17 @@ pub fn comparision() {
     let polsold = coeficients_to_polynomials_old(pols, num_coeficients);
     println!("finished: Initialization of polynomials");
 
-    let now = Instant::now();
+    /*let now = Instant::now();
     for i in 0..num_samples {
         eval_old(&polsold[2*i], &polsold[2*i+1],ope);
     }
     let elapsed_time = now.elapsed();
-    println!("Running the old cycle took {} seconds.", elapsed_time.as_secs());
+    //println!("Running the old cycle took {} seconds.", elapsed_time.as_millis());*/
 
     let now = Instant::now();
     for i in 0..num_samples {
         eval(&polsnew[2*i], &polsnew[2*i+1], ope);
     }
     let elapsed_time = now.elapsed();
-    println!("Running the cycle took {} seconds.", elapsed_time.as_secs());
-
-
-
+    println!("Running the cycle took {} seconds.", elapsed_time.as_millis());
 }
-
-
