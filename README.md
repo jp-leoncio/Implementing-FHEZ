@@ -13,9 +13,9 @@ Implementing FHEZ in Rust for my scientific iniciation in Unicamp.
     - [x] Parallel Multiplication
     - [x] Evaluation
     - [ ] Multiplications comparisons
-- [ ] Bibliography
+- [ ] Bibliography:
     - [ ] FHEZ
-    - [ ] ZAMA sTFHE-rs
+    - [ ] ZAMA TFHE-rs
     - [ ] Double-CRT
     - [ ] Concrete-FFT
 
