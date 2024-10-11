@@ -20,7 +20,7 @@ fn pow_10(n: usize) -> usize {
     x
 }
 
-#[divan::bench(consts = [0,1,2,3,4,5,6,7])]
+#[divan::bench(consts = [0,1,2,3,4,5,6])]
 fn add_poly<const SCALE: usize>(bencher: divan::Bencher) {
     bencher
         .with_inputs(|| rand_poly_pair(pow_10(SCALE)))
@@ -29,7 +29,7 @@ fn add_poly<const SCALE: usize>(bencher: divan::Bencher) {
         })
 }
 
-#[divan::bench(consts = [0,1,2,3,4,5,6,7])]
+#[divan::bench(consts = [0,1,2,3,4,5,6])]
 fn sub_poly<const SCALE: usize>(bencher: divan::Bencher) {
     bencher
         .with_inputs(|| rand_poly_pair(pow_10(SCALE)))
@@ -48,7 +48,7 @@ mod mutiplication {
                 polynomial::_mul_poly_fast(a, b);
             })
     }
-    #[divan::bench(consts = [0,1,2,3,4])]
+    #[divan::bench(consts = [0,1,2,3,4,5,6])]
     fn par_mult_poly<const SCALE: usize>(bencher: divan::Bencher) {
         bencher
             .with_inputs(|| rand_poly_pair(pow_10(SCALE)))
