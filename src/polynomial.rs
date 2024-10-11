@@ -22,7 +22,7 @@ pub fn _print_poly(a: &Polynomial) {
     println!("{:?}", a.coeficients[0]);
 }
 
-pub fn add_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
+pub fn _add_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let mut c = vec![0; max(a.n, b.n) as usize];
     let ini = min(a.n, b.n) as usize;
     for i in 0..ini {
@@ -42,7 +42,7 @@ pub fn add_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
 }
 
 fn _add_eval(alpha: i32, a: &Polynomial, b: &Polynomial) {
-    let c = add_poly(a, b);
+    let c = _add_poly(a, b);
     let mut value_ab = 0i32;
     let mut value_c = 0i32;
     let mut x = 1i32;
@@ -64,12 +64,12 @@ fn _add_eval(alpha: i32, a: &Polynomial, b: &Polynomial) {
     assert_eq!(value_ab, value_c);
 }
 
-pub fn sub_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
+pub fn _sub_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let mut minus = b.clone();
     for i in 0..(b.n as usize) {
         minus.coeficients[i] *= -1; 
     }
-    return add_poly(a, &minus);
+    return _add_poly(a, &minus);
 }
 
 fn _sub_eval(alpha: i32, a: &Polynomial, b: &Polynomial) {
@@ -81,18 +81,29 @@ fn _sub_eval(alpha: i32, a: &Polynomial, b: &Polynomial) {
     return _add_eval(alpha, a, &minus);
 }
 
-pub fn mul_poly_naive(a: &Polynomial, b: &Polynomial) -> Polynomial {
+pub fn _mul_poly_naive(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let tam = a.n + b.n - 1;
     let mut ret = Polynomial{n: tam, coeficients: vec![0; tam as usize]};
-    for i in 0..(a.n as usize) {
+    for i in 0..(a.n as usize) { // O Rust verifica em tempo de execução se o n estora o acesso do vetor
         for j in 0..(b.n as usize) {
-            ret.coeficients[i + j] += a.coeficients[i] * b.coeficients[j];
+            ret.coeficients[i + j] += a.coeficients[i] * b.coeficients[j]; // Esse faz 2 loads de informação por iteração, o antigo (naive) faz 3
         }
     }    
     return ret;
 }
 
-pub fn mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
+pub fn _mul_poly_mid(a: &Polynomial, b: &Polynomial) -> Polynomial {
+    let tam = a.n + b.n - 1;
+    let mut ret = Polynomial{n: tam, coeficients: vec![0; tam as usize]};
+    for (i, a_coef) in a.coeficients.iter().enumerate() {
+        for (j, b_coef) in b.coeficients.iter().enumerate() {
+            ret.coeficients[i + j] += a_coef * b_coef; // Esse faz 2 loads de informação por iteração, o antigo (naive) faz 3
+        }
+    }    
+    return ret;
+}
+
+pub fn _mul_poly_fast(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let n = a.n + b.n - 1;
     let mut ret = Polynomial {
         n,
@@ -113,7 +124,7 @@ pub fn mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     return ret;
 }
 
-pub fn par_mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
+pub fn _par_mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let n = a.n + b.n - 1;
     let coeficients = a
         .coeficients
@@ -133,7 +144,7 @@ pub fn par_mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     Polynomial { n, coeficients }
 }
 fn _mul_eval(alpha: i32, a: &Polynomial, b: &Polynomial) {
-    let c = mul_poly(a, b);
+    let c = _mul_poly_fast(a, b);
     let mut value_a = 0i32;
     let mut value_b = 0i32;
     let mut value_c = 0i32;
@@ -168,26 +179,26 @@ fn _mul_eval(alpha: i32, a: &Polynomial, b: &Polynomial) {
     }
 }*/
 
-pub fn eval(a: &Polynomial, b: &Polynomial, operation: i32) -> Polynomial {
+pub fn _eval(a: &Polynomial, b: &Polynomial, operation: i32) -> Polynomial {
     match operation {
-        1 => add_poly(a, b),
+        1 => _add_poly(a, b),
             
-        2 => sub_poly(a, b),
+        2 => _sub_poly(a, b),
 
-        3 => mul_poly(a, b),
+        3 => _mul_poly_fast(a, b),
 
         _ => return a.clone(),
     }
 }
 
 impl Polynomial {
-    pub fn new(coeficients: &Vec<i32>, qt_coeficients: i32) -> Polynomial {
+    pub fn _new(coeficients: &Vec<i32>, qt_coeficients: i32) -> Polynomial {
         return Polynomial {
             n: qt_coeficients,
             coeficients: coeficients.clone(),
         };
     }
-    pub fn new_rand(rng: &mut ThreadRng, num_coeficients: usize) -> Self {
+    pub fn _new_rand(rng: &mut ThreadRng, num_coeficients: usize) -> Self {
         let mut coeficients = vec![0; num_coeficients];
         for i in 0..num_coeficients {
             coeficients[i] = rng.gen_range(-100..100);
