@@ -22,6 +22,17 @@ pub fn _print_poly(a: &Polynomial) {
     println!("{:?}", a.coeficients[0]);
 }
 
+pub fn _extension(a: &Polynomial, n: i32) -> Polynomial {
+    let mut poly = Polynomial {n, coeficients: vec![0; n as usize]};
+    for i in 0..a.n as usize {
+        poly.coeficients[i] = a.coeficients[i];
+    }
+    for j in a.n..n {
+        poly.coeficients[j as usize] = 0;
+    }
+    return poly;
+}
+
 pub fn _add_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let mut c = vec![0; max(a.n, b.n) as usize];
     let ini = min(a.n, b.n) as usize;
@@ -143,6 +154,7 @@ pub fn _par_mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
 
     Polynomial { n, coeficients }
 }
+
 fn _mul_eval(alpha: i32, a: &Polynomial, b: &Polynomial) {
     let c = _mul_poly_fast(a, b);
     let mut value_a = 0i32;
