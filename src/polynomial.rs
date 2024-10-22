@@ -13,15 +13,38 @@ pub struct Polynomial {
 }
 
 pub fn print_poly(a: &Polynomial) {
-    let mut i = (a.n - 1) as usize;
-    while i > 0 {
-        if a.coeficients[i] != 0 {
-            print!("{:?}x^{:?}", a.coeficients[i], i);
-            print!(" + ");
-        }
+    let mut i = a.n as usize;
+
+    if !is_null(a) && a.n > 0 {
+        print!("{:?}x^{:?}", a.coeficients[i], i);
         i -= 1;
+
+        while i > 0 {
+            if a.coeficients[i] < 0 {
+                print!(" - ");
+                print!("{:?}x^{:?}", (-1) * a.coeficients[i], i);
+            } else if a.coeficients[i] > 0 {
+                print!(" + ");
+                print!("{:?}x^{:?}", a.coeficients[i], i);
+            }
+            i -= 1;
+        }
+    
+        if a.coeficients[i] < 0 {
+            print!(" - ");
+            print!("{:?}", (-1) * a.coeficients[i]);
+        } else if a.coeficients[i] > 0 {
+            print!(" + ");
+            print!("{:?}", a.coeficients[i]);
+        }
+        println!("");
+
+    } else if !is_null(a) && a.n == 0{
+        println!("{:?}", a.coeficients[i]);
+    } else {
+        println!("0");
     }
-    println!("{:?}", a.coeficients[0]);
+
 }
 
 pub fn is_null(a: &Polynomial) -> bool {
@@ -51,22 +74,22 @@ pub fn extension(a: &Polynomial, len: i32) -> Polynomial {
 }
 
 pub fn add_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
-    let len = max(a.len, b.len);
-    let ini = min(a.len, b.len) as usize;
+    let len = max(a.n, b.n) + 1;
+    let ini = (min(a.n, b.n) + 1) as usize;
 
     let mut p = Polynomial{
         len,
-        n: len - 1, 
+        n: max(a.n, b.n), 
         coeficients: vec![0; len as usize]
     };
 
     for i in 0..ini {
         p.coeficients[i] = a.coeficients[i] + b.coeficients[i];
     }
-    for i in ini..(a.len as usize) {
+    for i in ini..((a.n + 1) as usize) {
         p.coeficients[i] = a.coeficients[i];
     }
-    for i in ini..(b.len as usize) {
+    for i in ini..((b.n + 1) as usize) {
         p.coeficients[i] = b.coeficients[i];
     }
 
@@ -81,31 +104,31 @@ pub fn sub_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     return add_poly(a, &minus);
 }
 
-pub unsafe fn mul_poly_naive(a: &Polynomial, b: &Polynomial) -> Polynomial {
+pub unsafe fn mul_poly_naive_unsafe(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let mut ret = Polynomial{
         len: a.n + b.n + 1, 
         n: a.n + b.n, 
         coeficients: vec![0; (a.n + b.n + 1) as usize]
     };
 
-    for i in 0..(a.len as usize) {
-        for j in 0..(b.len as usize) {
+    for i in 0..((a.n + 1) as usize) {
+        for j in 0..((a.n + 1) as usize) {
             ret.coeficients[i + j] += a.coeficients[i] * b.coeficients[j]; 
         }
     }    
     return ret;
 }
 
-pub fn mul_poly_naive_safe(a: &Polynomial, b: &Polynomial) -> Polynomial {
+pub fn mul_poly_naive(a: &Polynomial, b: &Polynomial) -> Polynomial {
     let mut ret = Polynomial{
         len: a.n + b.n + 1, 
         n: a.n + b.n, 
         coeficients: vec![0; (a.n + b.n + 1) as usize]
     };
 
-    for i in 0..(a.len as usize) {
-        for j in 0..(b.len as usize) {
-            ret.coeficients[i + j] += a.coeficients[i] * b.coeficients[j]; 
+    for i in 0..((a.n + 1) as usize) {
+        for j in 0..((b.n + 1) as usize) {
+            ret.coeficients[i + j] += a.coeficients[i] * b.coeficients[j];
             // O compilador não sabe se a.n é do mesmo tamanho doq o a.coef.len(), então em cada iteração ele precisa verificar se a memória explode
         }
     }    
