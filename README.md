@@ -9,6 +9,7 @@ Implementing FHEZ in Rust for my scientific iniciation in Unicamp.
     - [x] Slow Multiplication O(n²)
     - [ ] Polynomial Mod
     - [ ] FFT-Multiplication O(n*log n)
+    - [ ] Stable Multiplication (Expansion)
 - [ ] Benchmarks:
     - [x] Parallel Multiplication
     - [x] Evaluation
