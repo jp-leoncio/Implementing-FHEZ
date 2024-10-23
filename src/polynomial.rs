@@ -7,8 +7,8 @@ use rayon::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct Polynomial {
-    pub len: i32,
-    pub n: i32,
+    pub len: u32,
+    pub n: u32,
     pub coeficients: Vec<i32>,
 }
 
@@ -56,7 +56,7 @@ pub fn is_null(a: &Polynomial) -> bool {
     return true;
 }
 
-pub fn extension(a: &Polynomial, len: i32) -> Polynomial {
+pub fn extension(a: &Polynomial, len: u32) -> Polynomial {
     let mut p = Polynomial{
         len, 
         n: len - 1, 
@@ -129,7 +129,8 @@ pub fn mul_poly_naive(a: &Polynomial, b: &Polynomial) -> Polynomial {
     for i in 0..((a.n + 1) as usize) {
         for j in 0..((b.n + 1) as usize) {
             ret.coeficients[i + j] += a.coeficients[i] * b.coeficients[j];
-            // O compilador não sabe se a.n é do mesmo tamanho doq o a.coef.len(), então em cada iteração ele precisa verificar se a memória explode
+            /* O compilador não sabe se a.n é do mesmo tamanho doq o a.coef.len(), então 
+             * em cada iteração ele precisa verificar se a memória explode */ 
         }
     }    
     return ret;
@@ -194,8 +195,38 @@ pub fn par_mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     Polynomial{len, n: len - 1, coeficients}
 }
 
+pub fn module_poly(a: &Polynomial, degree: u32) -> Polynomial {
+    /* Fazer mod x^n + 1, n = degree 
+     *  */
+    let mut cont = 1u32;
+    let mut valor = 1u32;
+    let mut p = Polynomial {
+        len: degree,
+        n: degree - 1,
+        coeficients: vec![0; degree as usize]
+    };
+
+    for i in 0..degree as usize {
+        p.coeficients[i] = a.coeficients[i];
+    }
+
+    for i in degree..a.len {
+        p.coeficients[(i % degree) as usize] += (-1 as i32).pow(valor) * a.coeficients[i as usize];
+        cont += 2;
+        if cont == (2 * degree + 1) {
+            cont = 0;
+            valor = 0;
+        } else if cont == (2 * degree) {
+            cont = 1;
+            valor = 1;
+        }
+    }
+    print_poly(&p);
+    return p;
+}
+
 impl Polynomial {
-    pub fn new(coeficients: &Vec<i32>, qt_coeficients: i32) -> Polynomial {
+    pub fn new(coeficients: &Vec<i32>, qt_coeficients: u32) -> Polynomial {
         return Polynomial {
             len: qt_coeficients,
             n: qt_coeficients - 1,
@@ -211,8 +242,8 @@ impl Polynomial {
         }
 
         return Polynomial {
-            len: num_coeficients as i32,
-            n: (num_coeficients - 1) as i32,
+            len: num_coeficients as u32,
+            n: (num_coeficients - 1) as u32,
             coeficients,
         };
     }
