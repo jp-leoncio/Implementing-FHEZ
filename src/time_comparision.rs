@@ -17,7 +17,7 @@ fn random_coeficients(num_coeficients: usize, num_polynomials: usize, mut _rng: 
 
 fn coeficients_to_polynomials(pols: &Vec<Vec<i32>>, qt_coeficients: usize) -> Vec<Polynomial> {
     return pols.iter()
-        .map(|coeficients| Polynomial::new(&coeficients, qt_coeficients as i32))
+        .map(|coeficients| Polynomial::new(&coeficients, qt_coeficients as u32))
         .collect()
 }
 
