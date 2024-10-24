@@ -7,13 +7,14 @@ Implementing FHEZ in Rust for my scientific iniciation in Unicamp.
     - [x] Random Polynomial
     - [x] Sum/Subtration
     - [x] Slow Multiplication O(n²)
-    - [ ] Polynomial Mod
+    - [x] Polynomial Mod
     - [ ] FFT-Multiplication O(n*log n)
     - [ ] Stable Multiplication (Expansion)
 - [ ] Benchmarks:
     - [x] Parallel Multiplication
     - [x] Evaluation
-    - [ ] Multiplications comparisons
+    - [x] Multiplications comparisons
+    - [ ] Mod time consumption
 - [ ] Bibliography:
     - [ ] FHEZ
     - [ ] ZAMA TFHE-rs
