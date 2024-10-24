@@ -14,8 +14,12 @@ pub struct Polynomial {
 
 pub fn print_poly(a: &Polynomial) {
     let mut i = a.n as usize;
-
-    if !is_null(a) && a.n > 0 {
+    
+    if is_null(a) {
+        println!("Null Polynomial");
+    } else if !is_null(a) && a.n == 0 {
+        println!("{:?}", a.coeficients[i]);
+    } else {
         print!("{:?}x^{:?}", a.coeficients[i], i);
         i -= 1;
 
@@ -38,18 +42,13 @@ pub fn print_poly(a: &Polynomial) {
             print!("{:?}", a.coeficients[i]);
         }
         println!("");
-
-    } else if !is_null(a) && a.n == 0{
-        println!("{:?}", a.coeficients[i]);
-    } else {
-        println!("0");
     }
 
 }
 
 pub fn is_null(a: &Polynomial) -> bool {
-    for i in 0..a.len as usize {
-        if a.coeficients[i] != 0 {
+    for (_, a_coef) in a.coeficients.iter().enumerate()  {
+        if a_coef != &0 {
             return false;
         }
     }
