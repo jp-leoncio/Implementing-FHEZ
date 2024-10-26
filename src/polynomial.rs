@@ -220,7 +220,6 @@ pub fn module_poly(a: &Polynomial, degree: u32) -> Polynomial {
             valor = 1;
         }
     }
-    print_poly(&p);
     return p;
 }
 
