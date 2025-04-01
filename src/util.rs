@@ -69,6 +69,5 @@ pub fn extension(a: &Polynomial, len: u32) -> Polynomial {
     for j in (a.len as usize)..p.len as usize {
         p.coeficients[j] = 0;
     }
-
     return p;
 }
