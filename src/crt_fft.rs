@@ -6,6 +6,7 @@ use num_complex::Complex;
 use std::time::{Duration, Instant};
 use crate::N;
 
+const PRIME_LEN: usize = 3;
 static PRIME: &'static [i64] = &[3, 5, 7];
 static PRIME_15: &'static [i64] = &[32771,32779,32783,32789,32797,32801,32803,32831,32833,
     32839,32843,32869,32887,32909,32911,32917,32933,32939, 
@@ -59,7 +60,7 @@ pub fn crt(a: &mut [Complex<f64>]) -> f64 {
 }
 
 pub fn double_crt<const N: usize>(a: &mut [Complex<f64>], b: &mut [Complex<f64>]) -> [Complex<f64>; N] {
-    let mut c = [[c64::new(0.0, 0.0); N]; 3];
+    let mut c = [[c64::new(0.0, 0.0); N]; PRIME_LEN];
     for i in 0..PRIME.len() {
         let mut a_i = [c64::new(0.0, 0.0); N];
         let mut b_i = [c64::new(0.0, 0.0); N];
@@ -77,10 +78,63 @@ pub fn double_crt<const N: usize>(a: &mut [Complex<f64>], b: &mut [Complex<f64>]
         }
     }
 
-    let mut trans = [[c64::new(0.0, 0.0); 3]; N];
+    let mut trans = [[c64::new(0.0, 0.0); PRIME_LEN]; N];
     for i in 0..N {
         for j in 0..PRIME.len() {
             trans[i][j] = c[j][i];
+        }
+    }
+
+    let mut answer = [c64::new(0.0, 0.0); N];
+    for i in 0..N {
+        answer[i].re = crt(&mut trans[i]);
+    }
+
+    return answer;
+}
+
+pub fn to_fft<const N: usize>(a: &mut [Complex<f64>]) -> &mut [Complex<f64>] {
+    let plan = Plan::new(N, Method::Measure(Duration::from_millis(10)));
+    let mut scratch_memory = GlobalPodBuffer::new(plan.fft_scratch().unwrap());
+    let mut stack = PodStack::new(&mut scratch_memory);
+
+    plan.fwd(a, stack.rb_mut());
+    return a;
+}
+
+pub fn from_fft<const N: usize>(a: &mut [Complex<f64>]) -> &mut [Complex<f64>] {
+    let plan = Plan::new(N, Method::Measure(Duration::from_millis(10)));
+    let mut scratch_memory = GlobalPodBuffer::new(plan.fft_scratch().unwrap());
+    let mut stack = PodStack::new(&mut scratch_memory);
+
+    plan.inv(a, stack.rb_mut());
+    for i in 0..N {
+        a[i] /= N as f64;
+    }
+    return a;
+}
+
+pub fn to_crt<'a, const N: usize>(a: &'a mut [Complex<f64>]) -> [[Complex<f64>; N]; PRIME_LEN] {
+    let mut c = [[c64::new(0.0, 0.0); N]; PRIME_LEN];
+    for i in 0..PRIME.len() {
+        // MOD
+        for j in 0..N {
+            c[i][j] = a[j] % PRIME[i] as f64;
+        }
+        to_fft::<N>(&mut c[i]);
+    }
+    return c;
+}
+
+pub fn from_crt<const N: usize>(a: &mut [[Complex<f64>; N]; PRIME_LEN]) -> [Complex<f64>; N] {
+    for i in 0..PRIME_LEN {
+        from_fft::<N>(&mut a[i]);
+    }
+
+    let mut trans = [[c64::new(0.0, 0.0); PRIME_LEN]; N];
+    for i in 0..N {
+        for j in 0..PRIME_LEN {
+            trans[i][j] = a[j][i];
         }
     }
 
