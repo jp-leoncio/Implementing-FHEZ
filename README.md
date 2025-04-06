@@ -3,8 +3,8 @@ Implementing FHEZ in Rust for my scientific iniciation in Unicamp.
 
 # TODO list:
 - [ ] Double-CRT:
-    - [ ] Conversion operations
-    - [ ] Addition
+    - [X] Conversion operations
+    - [X] Addition
     - [ ] Multiplication
         - [ ] DCRT x DCRT -> DCRT
         - [ ] Poly x DCRT -> Poly
