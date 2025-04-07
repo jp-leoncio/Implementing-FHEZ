@@ -4,7 +4,8 @@ use concrete_fft::ordered::{Plan, Method};
 use dyn_stack::{PodStack, GlobalPodBuffer, ReborrowMut};
 use num_complex::Complex;
 use std::time::{Duration, Instant};
-use crate::polynomial::Polynomial;
+use crate::polynomial::*;
+use crate::util::*;
 use crate::N;
 
 const PRIME_LEN: usize = 3;
@@ -165,4 +166,12 @@ pub fn mul_crt<const N: usize>(a: &mut [[Complex<f64>; N]; PRIME_LEN], b: &mut [
         }
     }
     return c;
+}
+
+pub fn mul_poly_crt<const N: usize>(a: &mut Polynomial, b: &mut [[Complex<f64>; N]; PRIME_LEN]) -> Polynomial {
+    let mut conv = from_poly::<N>(&a);
+    let mut new_a = to_crt::<N>(&mut conv);
+    let mut c = mul_crt(&mut new_a, b);
+    let conv = from_crt(&mut c);
+    return to_poly(conv);
 }
