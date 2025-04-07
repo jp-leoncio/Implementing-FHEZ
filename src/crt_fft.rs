@@ -109,15 +109,15 @@ pub fn from_fft<const N: usize>(a: &mut [Complex<f64>]) -> &mut [Complex<f64>] {
     let mut stack = PodStack::new(&mut scratch_memory);
 
     plan.inv(a, stack.rb_mut());
-    // for i in 0..N {
-    //     a[i] /= N as f64;
-    // }
+    for i in 0..N {
+        a[i] /= N as f64;
+    }
     return a;
 }
 
 pub fn to_crt<'a, const N: usize>(a: &'a mut [Complex<f64>]) -> [[Complex<f64>; N]; PRIME_LEN] {
     let mut c = [[c64::new(0.0, 0.0); N]; PRIME_LEN];
-    for i in 0..PRIME.len() {
+    for i in 0..PRIME_LEN {
         // MOD
         for j in 0..N {
             c[i][j] = a[j] % PRIME[i] as f64;
@@ -128,11 +128,9 @@ pub fn to_crt<'a, const N: usize>(a: &'a mut [Complex<f64>]) -> [[Complex<f64>; 
 }
 
 pub fn from_crt<const N: usize>(a: &mut [[Complex<f64>; N]; PRIME_LEN]) -> [Complex<f64>; N] {
-    println!("{:?}", a[1]);
     for i in 0..PRIME_LEN {
         from_fft::<N>(&mut a[i]);
     }
-    println!("{:?}", a[1]);
 
     let mut trans = [[c64::new(0.0, 0.0); PRIME_LEN]; N];
     for i in 0..N {
@@ -154,11 +152,17 @@ pub fn add_crt<const N: usize>(a: &mut [[Complex<f64>; N]; PRIME_LEN], b: &mut [
     for i in 0..PRIME_LEN {
         for j in 0..N {
             c[i][j] = a[i][j] + b[i][j];
-            c[i][j] %= PRIME[i] as f64
         }
-        // println!("A with prime {:?}: {:?}", PRIME[i], a[i]);
-        // println!("B with prime {:?}: {:?}", PRIME[i], b[i]);
-        // println!("C with prime {:?}: {:?}", PRIME[i], c[i]);
+    }
+    return c;
+}
+
+pub fn mul_crt<const N: usize>(a: &mut [[Complex<f64>; N]; PRIME_LEN], b: &mut [[Complex<f64>; N]; PRIME_LEN]) -> [[Complex<f64>; N]; PRIME_LEN] {
+    let mut c = [[c64::new(0.0, 0.0); N]; PRIME_LEN];
+    for i in 0..PRIME_LEN {
+        for j in 0..N {
+            c[i][j] = a[i][j] * b[i][j];
+        }
     }
     return c;
 }
