@@ -3,11 +3,21 @@ use crate::N;
 use num_complex::Complex;
 use concrete_fft::c64;
 
-pub fn converter(a: &Polynomial) -> [Complex<f64>; N] {
+pub fn from_poly<const N: usize>(a: &Polynomial) -> [Complex<f64>; N] {
     let mut new_a = [c64::new(0.0, 0.0); N];  
 
     for i in 0..a.len as usize{
         new_a[i].re = a.coeficients[i] as f64;
+    }
+
+    return new_a;
+}
+
+pub fn to_poly<const N: usize>(a: [Complex<f64>; N]) -> Polynomial {
+    let mut new_a = Polynomial::new(&[0; N].to_vec(), N as u32);
+
+    for i in 0..N {
+        new_a.coeficients[i] = a[i].re as i32;
     }
 
     return new_a;
