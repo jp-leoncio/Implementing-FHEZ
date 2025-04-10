@@ -1,9 +1,12 @@
 #![allow(dead_code)]
-use std::cmp::max;
-use std::cmp::min;
+#![allow(unused_imports)]
+use std::cmp::{max, min};
+use std::mem::swap;
+use num_complex::Complex;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use rayon::prelude::*;
+static PI: f64 = 3.1415926535;
 
 #[derive(Clone, Debug)]
 pub struct Polynomial {
@@ -12,64 +15,10 @@ pub struct Polynomial {
     pub coeficients: Vec<i32>,
 }
 
-pub fn print_poly(a: &Polynomial) {
-    let mut i = a.n as usize;
-    
-    if is_null(a) {
-        println!("Null Polynomial");
-    } else if !is_null(a) && a.n == 0 {
-        println!("{:?}", a.coeficients[i]);
-    } else {
-        print!("{:?}x^{:?}", a.coeficients[i], i);
-        i -= 1;
-
-        while i > 0 {
-            if a.coeficients[i] < 0 {
-                print!(" - ");
-                print!("{:?}x^{:?}", (-1) * a.coeficients[i], i);
-            } else if a.coeficients[i] > 0 {
-                print!(" + ");
-                print!("{:?}x^{:?}", a.coeficients[i], i);
-            }
-            i -= 1;
-        }
-    
-        if a.coeficients[i] < 0 {
-            print!(" - ");
-            print!("{:?}", (-1) * a.coeficients[i]);
-        } else if a.coeficients[i] > 0 {
-            print!(" + ");
-            print!("{:?}", a.coeficients[i]);
-        }
-        println!("");
-    }
-
-}
-
-pub fn is_null(a: &Polynomial) -> bool {
-    for (_, a_coef) in a.coeficients.iter().enumerate()  {
-        if a_coef != &0 {
-            return false;
-        }
-    }
-    return true;
-}
-
-pub fn extension(a: &Polynomial, len: u32) -> Polynomial {
-    let mut p = Polynomial{
-        len, 
-        n: len - 1, 
-        coeficients: vec![0; len as usize]
-    };
-
-    for i in 0..a.len as usize{
-        p.coeficients[i] = a.coeficients[i];
-    }
-    for j in (a.len as usize)..p.len as usize{
-        p.coeficients[j] = 0;
-    }
-
-    return p;
+#[derive(Clone, Debug)]
+pub struct Congruence {
+    pub a: i32,
+    pub m: i32,
 }
 
 pub fn add_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
@@ -101,21 +50,6 @@ pub fn sub_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
         minus.coeficients[i] *= -1; 
     }
     return add_poly(a, &minus);
-}
-
-pub unsafe fn mul_poly_naive_unsafe(a: &Polynomial, b: &Polynomial) -> Polynomial {
-    let mut ret = Polynomial{
-        len: a.n + b.n + 1, 
-        n: a.n + b.n, 
-        coeficients: vec![0; (a.n + b.n + 1) as usize]
-    };
-
-    for i in 0..((a.n + 1) as usize) {
-        for j in 0..((a.n + 1) as usize) {
-            ret.coeficients[i + j] += a.coeficients[i] * b.coeficients[j]; 
-        }
-    }    
-    return ret;
 }
 
 pub fn mul_poly_naive(a: &Polynomial, b: &Polynomial) -> Polynomial {
@@ -236,13 +170,38 @@ impl Polynomial {
         let mut coeficients = vec![0; num_coeficients];
 
         for i in 0..num_coeficients {
-            coeficients[i] = rng.gen_range(-100..100);
+            coeficients[i] = rng.gen_range(0..100);
         }
 
         return Polynomial {
             len: num_coeficients as u32,
             n: (num_coeficients - 1) as u32,
             coeficients,
+        };
+    }
+
+    pub fn new_mod(rng: &mut ThreadRng, num_coeficients: usize, degree: u32) -> Self {
+        let mut coeficients = vec![0; num_coeficients];
+
+        for i in 0..num_coeficients {
+            coeficients[i] = rng.gen_range(0..100);
+        }
+
+        let a = Polynomial {
+            len: num_coeficients as u32,
+            n: (num_coeficients - 1) as u32,
+            coeficients,
+        };
+        return module_poly(&a, degree);
+    }
+
+}
+
+impl Congruence {
+    pub fn new(a: i32, m: i32) -> Congruence {
+        return Congruence {
+            a: a,
+            m: m,
         };
     }
 }
