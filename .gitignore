@@ -1,3 +1,6 @@
+/.vscode
 /target
+/dead_fft.rs
 /src/polynomial_old.rs
 /src/test.rs
+/text.md
