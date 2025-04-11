@@ -11,7 +11,7 @@ Implementing FHEZ in Rust for my scientific iniciation in Unicamp.
     - [ ] Inner Product
         - [ ] ⟨DCRT, DCRT⟩ -> DCRT
         - [ ] ⟨Poly, DCRT⟩ -> Poly
-    -[ ] Evaluation
+    - [ ] Evaluation
 - [ ] Benchmarks:
     - [ ] Operations with DCRT
 - [ ] Bibliography:
