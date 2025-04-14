@@ -63,7 +63,7 @@ pub fn is_null(a: &Polynomial) -> bool {
 }
 
 pub fn extension(a: &Polynomial, len: u32) -> Polynomial {
-    let mut poly = Polynomial{
+    let mut poly = Polynomial {
         len, 
         n: len - 1, 
         coeficients: vec![0; len as usize]
