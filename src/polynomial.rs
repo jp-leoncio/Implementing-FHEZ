@@ -6,7 +6,7 @@ use num_complex::Complex;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use rayon::prelude::*;
-static PI: f64 = 3.1415926535;
+const PI: f64 = std::f64::consts::PI;
 
 #[derive(Clone, Debug)]
 pub struct Polynomial {
@@ -41,7 +41,7 @@ pub fn add_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
         p.coeficients[i] = b.coeficients[i];
     }
 
-    return p;
+    p
 }
 
 pub fn sub_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
@@ -49,7 +49,7 @@ pub fn sub_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
     for i in 0..(b.len as usize) {
         minus.coeficients[i] *= -1; 
     }
-    return add_poly(a, &minus);
+    add_poly(a, &minus)
 }
 
 pub fn mul_poly_naive(a: &Polynomial, b: &Polynomial) -> Polynomial {
@@ -66,7 +66,7 @@ pub fn mul_poly_naive(a: &Polynomial, b: &Polynomial) -> Polynomial {
              * em cada iteração ele precisa verificar se a memória explode */ 
         }
     }    
-    return ret;
+    ret
 }
 
 pub fn mul_poly_mid(a: &Polynomial, b: &Polynomial) -> Polynomial {
@@ -82,7 +82,7 @@ pub fn mul_poly_mid(a: &Polynomial, b: &Polynomial) -> Polynomial {
             // Esse faz 2 loads de informação por iteração, o antigo (naive) faz 3
         }
     }    
-    return ret;
+    ret
 }
 
 pub fn mul_poly_fast(a: &Polynomial, b: &Polynomial) -> Polynomial {
@@ -104,7 +104,7 @@ pub fn mul_poly_fast(a: &Polynomial, b: &Polynomial) -> Polynomial {
         .for_each(|(i, coef)| {
             ret.coeficients[i] += coef;
         });
-    return ret;
+    ret
 }
 
 pub fn par_mul_poly(a: &Polynomial, b: &Polynomial) -> Polynomial {
@@ -144,7 +144,7 @@ pub fn module_poly(a: &Polynomial, degree: u32) -> Polynomial {
     }
 
     for i in degree..a.len {
-        p.coeficients[(i % degree) as usize] += (-1 as i32).pow(valor) * a.coeficients[i as usize];
+        p.coeficients[(i % degree) as usize] += (-1_i32).pow(valor) * a.coeficients[i as usize];
         cont += 2;
         if cont == (2 * degree + 1) {
             cont = 0;
@@ -154,16 +154,16 @@ pub fn module_poly(a: &Polynomial, degree: u32) -> Polynomial {
             valor = 1;
         }
     }
-    return p;
+    p
 }
 
 impl Polynomial {
     pub fn new(coeficients: &Vec<i32>, qt_coeficients: u32) -> Polynomial {
-        return Polynomial {
+        Polynomial {
             len: qt_coeficients,
             n: qt_coeficients - 1,
             coeficients: coeficients.clone(),
-        };
+        }
     }
 
     pub fn new_rand(rng: &mut ThreadRng, num_coeficients: usize) -> Self {
@@ -173,18 +173,18 @@ impl Polynomial {
             coeficients[i] = rng.gen_range(0..100);
         }
 
-        return Polynomial {
+        Polynomial {
             len: num_coeficients as u32,
             n: (num_coeficients - 1) as u32,
             coeficients,
-        };
+        }
     }
 
     pub fn new_mod(rng: &mut ThreadRng, num_coeficients: usize, degree: u32) -> Self {
         let mut coeficients = vec![0; num_coeficients];
 
         for i in 0..num_coeficients {
-            coeficients[i] = rng.gen_range(0..100);
+            coeficients[i] = rng.gen_range(0..1000);
         }
 
         let a = Polynomial {
@@ -192,16 +192,16 @@ impl Polynomial {
             n: (num_coeficients - 1) as u32,
             coeficients,
         };
-        return module_poly(&a, degree);
+        module_poly(&a, degree)
     }
 
 }
 
 impl Congruence {
     pub fn new(a: i32, m: i32) -> Congruence {
-        return Congruence {
-            a: a,
-            m: m,
-        };
+        Congruence {
+            a,
+            m,
+        }
     }
 }
