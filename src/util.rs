@@ -5,22 +5,18 @@ use concrete_fft::c64;
 
 pub fn from_poly<const N: usize>(a: &Polynomial) -> [Complex<f64>; N] {
     let mut new_a = [c64::new(0.0, 0.0); N];  
-
-    for i in 0..a.len as usize{
-        new_a[i].re = a.coeficients[i] as f64;
+    for (i, coef) in a.coeficients.iter().enumerate(){
+        new_a[i].re = *coef as f64;
     }
-
-    return new_a;
+    new_a
 }
 
 pub fn to_poly<const N: usize>(a: [Complex<f64>; N]) -> Polynomial {
     let mut new_a = Polynomial::new(&[0; N].to_vec(), N as u32);
-
-    for i in 0..N {
-        new_a.coeficients[i] = a[i].re as i32;
+    for (i, coef) in new_a.coeficients.iter_mut().enumerate() {
+        *coef = a[i].re as i32;
     }
-
-    return new_a;
+    new_a
 }
 
 pub fn print_poly(a: &Polynomial) {
@@ -37,7 +33,7 @@ pub fn print_poly(a: &Polynomial) {
         while i > 0 {
             if a.coeficients[i] < 0 {
                 print!(" - ");
-                print!("{:?}x^{:?}", (-1) * a.coeficients[i], i);
+                print!("{:?}x^{:?}", -a.coeficients[i], i);
             } else if a.coeficients[i] > 0 {
                 print!(" + ");
                 print!("{:?}x^{:?}", a.coeficients[i], i);
@@ -47,37 +43,37 @@ pub fn print_poly(a: &Polynomial) {
     
         if a.coeficients[i] < 0 {
             print!(" - ");
-            print!("{:?}", (-1) * a.coeficients[i]);
+            print!("{:?}", -a.coeficients[i]);
         } else if a.coeficients[i] > 0 {
             print!(" + ");
             print!("{:?}", a.coeficients[i]);
         }
-        println!("");
+        println!();
     }
 
 }
 
 pub fn is_null(a: &Polynomial) -> bool {
-    for (_, a_coef) in a.coeficients.iter().enumerate()  {
+    for a_coef in a.coeficients.iter() {
         if a_coef != &0 {
             return false;
         }
     }
-    return true;
+    true
 }
 
 pub fn extension(a: &Polynomial, len: u32) -> Polynomial {
-    let mut p = Polynomial{
+    let mut poly = Polynomial{
         len, 
         n: len - 1, 
         coeficients: vec![0; len as usize]
     };
 
     for i in 0..a.len as usize {
-        p.coeficients[i] = a.coeficients[i];
+        poly.coeficients[i] = a.coeficients[i];
     }
-    for j in (a.len as usize)..p.len as usize {
-        p.coeficients[j] = 0;
+    for j in (a.len as usize)..poly.len as usize {
+        poly.coeficients[j] = 0;
     }
-    return p;
+    poly
 }
