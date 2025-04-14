@@ -7,10 +7,13 @@ Implementing FHEZ in Rust for my scientific iniciation in Unicamp.
     - [X] Addition
     - [X] Multiplication
         - [X] DCRT x DCRT -> DCRT
+        - [X] DCRT x DCRT -> Poly
         - [X] Poly x DCRT -> Poly
-    - [ ] Inner Product
-        - [ ] ⟨DCRT, DCRT⟩ -> DCRT
-        - [ ] ⟨Poly, DCRT⟩ -> Poly
+    - [X] Inner Product
+        - [X] ⟨DCRT, DCRT⟩ -> DCRT
+        - [X] ⟨Poly, DCRT⟩ -> DCRT
+        - [X] ⟨Poly, Poly⟩ -> DCRT
+        - [X] ⟨DCRT, DCRT⟩ -> Poly
     - [ ] Evaluation
 - [ ] Benchmarks:
     - [ ] Operations with DCRT
