@@ -1,5 +1,6 @@
 use crate::Polynomial;
 use crate::N;
+use crate::B;
 use num_complex::Complex;
 use concrete_fft::c64;
 
@@ -17,6 +18,45 @@ pub fn to_poly<const N: usize>(a: [Complex<f64>; N]) -> Polynomial {
         *coef = a[i].re as i32;
     }
     new_a
+}
+
+pub fn sym_mod(a: i64, n: i64) -> i64 {
+    let valor = a % n;
+    if 2*valor > n {
+        return valor - n;
+    }
+    valor
+}
+
+pub fn red_base_ZZ<const l: usize>(a: i32, g: [f64; l]) -> [f64; l] {
+    // let l = q.log(B).ceil();
+    let mut res = [0.0; l];
+    let mut copy = a;
+    let mut valor = 0;
+    let mut rem = 0;
+    for i in 0..l {
+        valor = copy / (g[l-i-1] as i32);
+        rem = copy % (g[l-i-1] as i32);
+        res[l-i-1] = valor as f64;
+        copy = rem;
+        if rem == 0 {
+            break;
+        }
+    }
+    res
+}
+
+pub fn red_base_poly<const l: usize>(a: &mut Polynomial) -> [[f64; l]; N] {
+    let mut g = [0.0; l];
+    for i in 0..l {
+        g[i] = B.powi(i as i32);
+    }
+    let mut res = [[0.0; l]; N];
+    for i in 0..a.len as usize {
+        let reduc = red_base_ZZ(a.coeficients[i], g);
+        res[i] = reduc;
+    }
+    res
 }
 
 pub fn print_poly(a: &Polynomial) {
