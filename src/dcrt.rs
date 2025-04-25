@@ -1,12 +1,10 @@
-use modinverse::modinverse;
 use concrete_fft::c64;
-use concrete_fft::ordered::{Plan, Method};
-use dyn_stack::{PodStack, GlobalPodBuffer, ReborrowMut};
 use num_complex::Complex;
-use std::time::{Duration, Instant};
+use modinverse::modinverse;
+use concrete_fft::ordered::Plan;
+use dyn_stack::{PodStack, GlobalPodBuffer, ReborrowMut};
 use crate::polynomial::*;
 use crate::util::*;
-use crate::N;
 
 const PRIME_LEN: usize = 4;
 static PRIME: &[i64] = &[3, 5, 7, 11];
@@ -175,5 +173,11 @@ pub fn inner_product_to_poly<const N: usize, const L: usize>(a: &mut [[[Complex<
         let mut mul = mul_crt(&mut a[i], &mut b[i]);
         res = add_crt(&mut res, &mut mul);
     }
+    from_dcrt(&mut res, plan)
+}
+
+pub fn outer_product<const N: usize, const L: usize>(u: &mut Polynomial, v: &mut [[[Complex<f64>; N]; PRIME_LEN]; L], plan: &mut Plan) -> Polynomial {
+    let mut new_u = red_base_poly(u);
+    let mut res = inner_product_precomp::<N, L>(&mut new_u, v, plan);
     from_dcrt(&mut res, plan)
 }
