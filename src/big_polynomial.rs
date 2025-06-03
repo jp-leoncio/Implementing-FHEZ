@@ -13,31 +13,6 @@ pub struct BigPolynomial {
     pub coeficients: Vec<BigInt>,
 }
 
-// pub fn module(a: &mut BigPolynomial, degree: u32) -> BigPolynomial {
-//     // Fazer mod x^n + 1, n = degree 
-//     let mut cont = 1u32;
-//     let mut valor = 1u32;
-//     let mut p = BigPolynomial::new(degree as usize);
-
-//     for i in 0..degree as usize {
-//         p.coeficients[i] = a.coeficients[i];
-//     }
-
-//     for i in degree..a.len {
-//         p.coeficients[(i % degree) as usize] += 
-//         (BigInt::new(Sign::Minus, [1].to_vec())).modpow(degree, 2) * a.coeficients[i as usize];
-//         cont += 2; // Oq caralhos esse modpow faz cara.....
-//         if cont == (2 * degree + 1) {
-//             cont = 0;
-//             valor = 0;
-//         } else if cont == (2 * degree) {
-//             cont = 1;
-//             valor = 1;
-//         }
-//     }
-//     p
-// }
-
 impl BigPolynomial {
     pub fn new(qt_coeficients: usize) -> BigPolynomial {
         BigPolynomial {
