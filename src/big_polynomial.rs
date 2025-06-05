@@ -1,6 +1,6 @@
 #![allow(dead_code)]
-// #![allow(unused_imports)]
-use num_bigint::{BigInt, Sign, RandBigInt};
+#![allow(unused_imports)]
+use num_bigint::{BigInt, Sign, RandBigInt, ToBigInt};
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
@@ -18,22 +18,48 @@ impl BigPolynomial {
         BigPolynomial {
             len: qt_coeficients as u32,
             n: qt_coeficients as u32 - 1,
-            coeficients: vec![BigInt::new(Sign::Plus, [0].to_vec()); qt_coeficients],
+            coeficients: vec![BigInt::from(0); qt_coeficients],
         }
     }
 
-    pub fn rand(qt_coeficients: usize, size: u64) -> BigPolynomial {
+    pub fn rand(qt_coeficients: usize, size: u64, degree: u32) -> BigPolynomial {
         let mut rng = rand::thread_rng();
-        let mut ret = vec![BigInt::new(Sign::NoSign, [0].to_vec()); qt_coeficients];
+        let mut vec = vec![BigInt::from(0); qt_coeficients];
 
-        for coef in ret.iter_mut() {
+        for coef in vec.iter_mut() {
             *coef = RandBigInt::gen_bigint(&mut rng, size);
         }
 
-        BigPolynomial { 
+        let mut poly = BigPolynomial { 
             len: qt_coeficients as u32, 
             n: qt_coeficients as u32 - 1, 
-            coeficients: ret
+            coeficients: vec
+        };
+        poly.module(degree)
+    }
+
+    pub fn module(&mut self, degree: u32) -> BigPolynomial {
+        let mut cont = 1u32;
+        let mut valor = 1u32;
+        let mut poly = BigPolynomial::new(degree as usize);
+
+        for i in 0..degree as usize {
+            poly.coeficients[i] = self.coeficients[i].clone();
         }
+
+        for i in degree..self.len {
+            poly.coeficients[(i % degree) as usize] += 
+            BigInt::from(-1).pow(valor) * self.coeficients[i as usize].clone();
+            cont += 2;
+
+            if cont == (2 * degree + 1) {
+                cont = 0;
+                valor = 0;
+            } else if cont == (2 * degree) {
+                cont = 1;
+                valor = 1;
+            }
+        }
+        poly
     }
 }
