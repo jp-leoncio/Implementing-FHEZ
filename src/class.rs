@@ -1,17 +1,15 @@
-#![allow(unused_imports)]
 #![allow(unused_doc_comments)]
-use modinverse::modinverse;
-use concrete_fft::c64;
-use concrete_fft::ordered::{Plan, Method};
-use dyn_stack::{PodStack, GlobalPodBuffer, ReborrowMut};
-use num_bigint::{BigInt, BigUint, Sign, ToBigInt, ToBigUint};
-use num_complex::Complex;
-use rand::Rng;
-use std::ops::Div;
-use std::time::{Duration, Instant};
-use crate:: big_polynomial::*;
+
+use crate::big_polynomial::*;
 use crate::util::*;
 use crate::N;
+
+use concrete_fft::ordered::*;
+use concrete_fft::c64;
+use num_complex::*;
+use num_bigint::*;
+use dyn_stack::*;
+use rand::Rng;
 
 const PRIME_LEN: usize = 3; 
 
@@ -34,50 +32,39 @@ static PRIME_20: &[u32] = &[1048583, 1048589, 1048601, 1048609, 1048613,
 
 #[derive(Clone, Debug)]
 pub struct DCRT {
-    pub poly: [[Complex<f64>; N]; PRIME_LEN],
-    // pub a: Vec<[Complex<f64>; N]>,
+    // pub poly: [[Complex<f64>; N]; PRIME_LEN],
+    pub poly: Vec<Vec<Complex<f64>>>,
     pub n: usize,
     pub primes: usize,
 }
 
-/**
- * Funciona!!
-*/
 /// Calcula o valor esperado utilizando a congruências do array de `Complex<64>`
 /// no Teorema Chinês do Resto.
 /// 
 /// # Argumentos
 /// 
 /// * `a` - congruências dos valores com os primos definidos em `PRIME`.
-pub fn new_crt(a: &mut Vec<Complex<f64>>, m: &BigInt, m_i: &Vec<BigInt>) -> BigInt {
-    let mut solution = 0.to_bigint().unwrap();
-    for (i, primes) in m_i.iter().enumerate() { // uso m_i.iter() pq o len de m_i é o prime_qnt
-        let mut a_i = BigInt::ZERO;
-        if a[i].re < 0.0 {
-            a_i = BigInt::from(a[i].re as i32);
-        } else {
-            a_i = BigInt::from(a[i].re as i32);            
-        }
-        let n_i = modinvers(primes, &TESTE[i].into());
+pub fn crt(a: &mut Vec<Complex<f64>>, m: &BigInt, m_i: &Vec<BigInt>) -> BigInt {
+    let mut solution = BigInt::ZERO;
+    for (i, primes) in m_i.iter().enumerate() { // Uso m_i.iter() pq o len de m_i é o prime_qnt
+        let a_i = BigInt::from(a[i].re as i32);
+        let n_i = primes.modinv(&TESTE[i].into());
         solution = (solution + a_i * primes * n_i.unwrap()) % m;
     }
     solution
 }
 
-/**
- * Funciona!!
-*/
 pub fn precomp_crt(b: f64, gamma: f64, n: usize, l: usize, prime_len: usize) -> (BigUint, Vec<BigUint>) {
     let size = gamma + f64::ceil(f64::log2(l as f64)) 
     + f64::log2(b) + f64::log2(n as f64);
     
     let prime_qnt = (size as usize) / prime_len;
-    let mut m = BigUint::new([1].to_vec());
-    let mut m_i = vec![BigUint::new([1].to_vec()); prime_qnt];
+    let mut m = BigUint::from(1u32);
+    let mut m_i = vec![BigUint::from(1u32); prime_qnt];
 
     if prime_len == 15 {
         for i in 0..prime_qnt {
-            m *= BigUint::new([PRIME_15[i]].to_vec());
+            m *= BigUint::from(PRIME_15[i]);
         }
         for i in 0..prime_qnt {
             m_i[i] = m.clone() / PRIME_15[i];
@@ -86,7 +73,7 @@ pub fn precomp_crt(b: f64, gamma: f64, n: usize, l: usize, prime_len: usize) -> 
 
     else if prime_len == 20 {   
         for i in 0..prime_qnt {
-            m *= BigUint::new([PRIME_20[i]].to_vec());
+            m *= BigUint::from(PRIME_20[i]);
         }
         for i in 0..prime_qnt {
             m_i[i] = m.clone() / PRIME_20[i];
@@ -134,36 +121,35 @@ pub fn from_dcrt<const N: usize>(a: &mut DCRT, plan: &mut Plan) -> BigPolynomial
     // precomp_crt(b, gamma, n, l, prime_len);
     let m = BigInt::from(105);
     let m_i = vec![BigInt::from(35), BigInt::from(21), BigInt::from(15)];
-    let mut ans = BigPolynomial::new(N);
+    let mut res = BigPolynomial::new(N);
     for (i, line) in trans.iter_mut().enumerate() {
-        ans.coeficients[i] = new_crt(line, &m, &m_i);
+        res.coeficients[i] = crt(line, &m, &m_i);
     }
-    ans
+    res
 }
 
-
-pub fn inner_product<const N: usize, const L: usize>(a: &mut [DCRT; L], b: &mut [DCRT; L]) -> DCRT {
+pub fn inner_product<const L: usize>(a: &mut Vec<DCRT>, b: &mut Vec<DCRT>) -> DCRT {
     /**
     * TODO: Documentar as funções!!!
     */
     let mut res = DCRT::new(N, PRIME_LEN);
     for i in 0..L {
-        let mut mul = a[i].mul::<N>(&mut b[i]);
-        res = res.add::<N>(&mut mul);
+        let mut mul = a[i].mul(&mut b[i]);
+        res = res.add(&mut mul);
     }
     res
 }
 
-// pub fn external_product<const N: usize, const L: usize>(u: &mut Polynomial, v: &mut [[[Complex<f64>; N]; PRIME_LEN]; L], plan: &mut Plan) -> Polynomial {
-//     let mut new_u = red_base_poly::<L>(u);
-//     let mut res = inner_product_precomp::<N, L>(&mut new_u, v, plan);
+// pub fn external_product(u: &mut BigPolynomial, v: &mut Vec<Vec<BigPolynomial>>, plan: &mut Plan) -> BigPolynomial {
+//     let mut new_u = inv_g_poly(u, q);
+//     let mut res = inner_product::<10 /*o valor de l */>(&mut new_u, v);
 //     from_dcrt(&mut res, plan)
 // }
 
 impl DCRT {
     /// Gera um polinômio na forma DCRT com os coeficiente nulos.
     /// ```
-    /// codigo
+    /// codigo + 1;
     /// 
     /// ```
     pub fn new(n: usize, primes: usize) -> DCRT {
@@ -171,32 +157,28 @@ impl DCRT {
         * TODO: Documentar as funções!!!
         */
         DCRT {
-            poly: [[c64::new(0.0, 0.0); N]; PRIME_LEN], 
+            poly: vec![vec![c64::new(0.0, 0.0); N]; PRIME_LEN], 
             n,
             primes,
         }
     }
 
-    pub fn new_rand(n: usize, primes: usize) -> DCRT {
+    pub fn rand(n: usize, primes: usize) -> DCRT {
         /**
         * TODO: Documentar as funções!!!
         */
         let mut rng = rand::thread_rng();
-        let mut dcrt = [[c64::new(0.0, 0.0); N]; PRIME_LEN];
-        for poly in dcrt.iter_mut() {
-            for i in 0..poly.len() {
-                poly[i] = c64::new(rng.gen_range(0..100) as f64, 0.0);
-            }
-        }
+        let dcrt = vec![(0..N)
+        .map(|_| c64::new(rng.gen_range(0..100) as f64, rng.gen_range(0..100) as f64))
+        .collect(); PRIME_LEN];
         DCRT {
-            // poly: [[c64::new(rng.gen_range(0..100) as f64, 0.0); N]; PRIME_LEN], 
             poly: dcrt, 
             n,
             primes,
         }
     }
 
-    pub fn add<const N: usize>(&mut self, other: &mut DCRT) -> DCRT {
+    pub fn add(&mut self, other: &mut DCRT) -> DCRT {
         /**
         * TODO: Documentar as funções!!!
         */
@@ -204,14 +186,14 @@ impl DCRT {
 
         let mut res = DCRT::new(N, PRIME_LEN);
         for (i, poly) in res.poly.iter_mut().enumerate() {
-            for j in 0..N {
-                poly[j] = self.poly[i][j] + other.poly[i][j];
+            for (j, coef) in poly.iter_mut().enumerate() {
+                *coef = self.poly[i][j] + other.poly[i][j];
             }
         }
         res
     }
 
-    pub fn mul<const N: usize>(&mut self, other: &mut DCRT) -> DCRT {
+    pub fn mul(&mut self, other: &mut DCRT) -> DCRT {
         /**
         * TODO: Documentar as funções!!!
         */
@@ -219,8 +201,8 @@ impl DCRT {
 
         let mut res = DCRT::new(N, PRIME_LEN);
         for (i, poly) in res.poly.iter_mut().enumerate() {
-            for j in 0..N {
-                poly[j] = self.poly[i][j] * other.poly[i][j];
+            for (j, coef) in poly.iter_mut().enumerate() {
+                *coef = self.poly[i][j] * other.poly[i][j];
             }
         }
         res
