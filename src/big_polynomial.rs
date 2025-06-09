@@ -1,8 +1,6 @@
-#![allow(dead_code)]
-#![allow(unused_imports)]
-use num_bigint::{BigInt, Sign, RandBigInt, ToBigInt};
 use rand::rngs::ThreadRng;
 use rand::Rng;
+use num_bigint::*;
 
 const PI: f64 = std::f64::consts::PI;
 
@@ -18,17 +16,15 @@ impl BigPolynomial {
         BigPolynomial {
             len: qt_coeficients as u32,
             n: qt_coeficients as u32 - 1,
-            coeficients: vec![BigInt::from(0); qt_coeficients],
+            coeficients: vec![BigInt::ZERO; qt_coeficients],
         }
     }
 
-    pub fn rand(qt_coeficients: usize, size: u64, degree: u32) -> BigPolynomial {
+    pub fn rand(qt_coeficients: usize, size: u32, degree: u32) -> BigPolynomial {
         let mut rng = rand::thread_rng();
-        let mut vec = vec![BigInt::from(0); qt_coeficients];
-
-        for coef in vec.iter_mut() {
-            *coef = RandBigInt::gen_bigint(&mut rng, size);
-        }
+        let vec = (0..qt_coeficients)
+            .map(|_| RandBigInt::gen_bigint(&mut rng, size.into()))
+            .collect();
 
         let mut poly = BigPolynomial { 
             len: qt_coeficients as u32, 
@@ -42,14 +38,12 @@ impl BigPolynomial {
         let mut cont = 1u32;
         let mut valor = 1u32;
         let mut poly = BigPolynomial::new(degree as usize);
+        let slice = &self.coeficients[degree as usize..self.len as usize];
 
-        for i in 0..degree as usize {
-            poly.coeficients[i] = self.coeficients[i].clone();
-        }
+        poly.coeficients = self.coeficients.clone().into_iter().take(degree as usize).collect();
 
-        for i in degree..self.len {
-            poly.coeficients[(i % degree) as usize] += 
-            BigInt::from(-1).pow(valor) * self.coeficients[i as usize].clone();
+        for (i, coef) in slice.iter().enumerate() {
+            poly.coeficients[(i as u32 % degree) as usize] += BigInt::from(-1).pow(valor) * coef;
             cont += 2;
 
             if cont == (2 * degree + 1) {
