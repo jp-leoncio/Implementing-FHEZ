@@ -1,5 +1,5 @@
 [package]
-name = "Implementing_FHEZ"
+name = "implementing-fhez"
 version = "0.1.0"
 edition = "2021"
 
@@ -14,6 +14,7 @@ divan = "0.1.14"
 rayon = "1.10.0"
 criterion = { version = "0.5", features = ["html_reports"] }
 num-bigint = { version = "0.4", features = ["rand"] }
+num-traits = "0.2"
 
 [[bin]]
 name = "main"
@@ -21,6 +22,6 @@ path = "src/main.rs"
 bench = false
 
 [[bench]]
-name = "bench"
-path = "src/bench.rs"
+name = "dcrt_bench"
+path = "benchmarks/dcrt_bench.rs"
 harness = false
