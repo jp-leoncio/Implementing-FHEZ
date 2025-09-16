@@ -1,4 +1,5 @@
 use crate::prelude::*;
+const PI: f64 = std::f64::consts::PI;
 
 /// Primos de 15 bits
 static PRIME_15: &[u32] = &[
@@ -35,6 +36,29 @@ pub struct DcrtContext {
     pub m_i_inv_mod_pi: Vec<BigInt>,
 }
 
+/// Decompõe um BigPolynomial (criptograma escalar) em um vetor de `l` polinômios
+/// Esta função implementa a operação `g⁻¹` descrita no artigo
+pub fn gadget_decompose<const N: usize>(scalar_poly: &BigPolynomial, l: usize, b: u64) -> Vec<BigPolynomial> {
+    let mut decomposed_polys = vec![BigPolynomial::new(N); l];
+
+    // Decompõe cada coeficiente do polinômio de entrada
+    let mut decomposed_coeffs = Vec::with_capacity(N);
+    for coef in &scalar_poly.coeficients {
+        decomposed_coeffs.push(signed_base_b_decomposition(coef, b, l));
+    }
+
+    // "Transpõe" os resultados para formar os polinômios de saída
+    // O polinômio `i` na saída é formado pelo `i`-ésimo dígito de cada coeficiente original
+    for i in 0..l {
+        for j in 0..N {
+            if i < decomposed_coeffs[j].len() {
+                decomposed_polys[i].coeficients[j] = decomposed_coeffs[j][i].clone();
+            }
+        }
+    }
+
+    decomposed_polys
+}
 
 /// Reconstitui um coeficiente a partir de suas congruências usando o Teorema Chinês do Resto
 ///
@@ -69,7 +93,11 @@ pub fn to_dcrt<const N: usize>(a: &BigPolynomial, context: &DcrtContext, plan: &
             // let reduced_coef = coef % &p_big;
             
             let coef_f64 = reduced_coef.to_f64().unwrap_or(0.0);
-            res.poly[i][j] = c64::new(coef_f64, 0.0);
+
+            let theta = PI * j as f64 / N as f64;
+            let twiddle = c64::new(theta.cos(), theta.sin());
+            
+            res.poly[i][j] = c64::new(coef_f64, 0.0) * twiddle;
         }
         // Aplica a FFT
         to_fft::<N>(&mut res.poly[i], plan);
@@ -83,6 +111,12 @@ pub fn from_dcrt<const N: usize>(a: &mut Dcrt, context: &DcrtContext, plan: &mut
     // Aplica a FFT inversa para cada "camada" de primo
     for poly_mod_p in a.poly.iter_mut() {
         from_fft::<N>(poly_mod_p, plan);
+
+        for j in 0..N {
+            let theta = PI * j as f64 / N as f64;
+            let inv_twiddle = c64::new(theta.cos(), -theta.sin()); // Conjugado
+            poly_mod_p[j] *= inv_twiddle;
+        }
     }
 
     // Transpõe os dados para agrupar os coeficientes
@@ -139,6 +173,27 @@ pub fn inner_product(a: &[Dcrt], b: &[Dcrt]) -> Dcrt {
     }
 
     res
+}
+
+/// Calcula o produto externo (produto misto homomórfico) entre um vetor de criptogramas
+/// e um criptograma escalar, ambos no formato DCRT
+pub fn external_product<const N: usize>(vector_ciphertext: &[Dcrt], scalar_ciphertext: &mut Dcrt, context: &DcrtContext, plan: &mut Plan, l: usize, b: u64) -> Dcrt {
+    // 1. Converter o criptograma escalar do domínio DCRT/FFT de volta para o domínio
+    //    de inteiros para realizar a decomposição de forma exata
+    let scalar_poly = from_dcrt::<N>(scalar_ciphertext, context, plan);
+
+    // 2. Decompor o BigPolynomial escalar em um vetor de `l` BigPolynomials
+    let decomposed_scalar_polys = gadget_decompose::<N>(&scalar_poly, l, b);
+
+    // 3. Converter cada um dos polinômios decompostos de volta para o formato DCRT
+    let decomposed_scalar_dcrt: Vec<Dcrt> = decomposed_scalar_polys
+        .iter()
+        .map(|p| to_dcrt::<N>(p, context, plan))
+        .collect();
+
+    // 4. Calcular o produto interno entre o criptograma de vetor original e
+    //    o vetor decomposto do criptograma escalar
+    inner_product(vector_ciphertext, &decomposed_scalar_dcrt)
 }
 
 impl Dcrt {
