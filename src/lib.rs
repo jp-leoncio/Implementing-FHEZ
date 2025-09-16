@@ -27,10 +27,9 @@ pub use num_complex::*;
 pub use num_bigint::*;
 pub use rand::Rng;
 
-pub const N: usize = 16;            // N of X^N + 1
-// pub const B: f64 = 16777216.0;      // Fixed Base (2^24)
-pub const B: f64 = 2.0;      // Fixed Base (2^24)
-pub const gamma: f64 = 15.0;        // Module 2^gamma
+pub const N: usize = 256;            // N of X^N + 1
+pub const B: f64 = 16777216.0;      // Fixed Base (2^24)
+// pub const gamma: f64 = 206.0;        // Module 2^gamma
 pub const l: usize = 10;            // ceil(log(gamma) with B base)
 
 /*
