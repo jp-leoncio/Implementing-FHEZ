@@ -1,121 +1,103 @@
 use implementing_fhez::*;
-use criterion::{black_box, criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion,};
-type C64 = Complex<f64>;
+use criterion::{black_box, criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion};
 
-const POLY_DEGREE: usize = 32;
-const BENCH_PRIMES: &[u32] = &[
-    32771, 32779, 32783, 32789, 32797, 32801, 32803, 32831, 32833, 32839, 32843,
-    32869, 32887, 32909, 32911, 32917, 32933, 32939, 32941, 32957,
-    ];
-const PRIME_COUNT: usize = 10;
+// Primos de 20 bits para garantir que o módulo M seja grande o suficiente
+static ARTICLE_PRIMES: &[u32] = &[
+    1048583, 1048589, 1048601, 1048609, 1048613, 1048627, 1048633, 1048661,
+    1048681, 1048703, 1048709, 1048717, 1048721, 1048759, 1048783,
+];
 
-/// Função auxiliar para gerar um polinômio DCRT aleatório para os testes
-fn create_random_dcrt() -> Dcrt {
-    let mut rng = rand::thread_rng();
-    Dcrt {
-        poly: (0..PRIME_COUNT)
-            .map(|_| {
-                (0..POLY_DEGREE)
-                    .map(|_| C64::new(rng.gen(), rng.gen()))
-                    .collect()
-            })
-            .collect(),
-        n: POLY_DEGREE,
-    }
-}
+/// Função de benchmark genérica que agora aceita todos os parâmetros do artigo
+fn run_benchmarks_for_n<const N_POLY: usize>(
+    c: &mut Criterion,
+    rho: u32,
+    gamma: f64,
+    big_l: usize,      // Parâmetro L da tabela (para produto interno)
+    l_param: usize,    // Parâmetro ℓ da tabela (para produto externo)
+    log_b_param: u32,  // Parâmetro log b da tabela (para produto externo)
+    id: &str,
+) {
+    let mut group = c.benchmark_group("FHEZ Operations (Article Params)");
 
-fn create_random_big_poly(bit_size: u64) -> BigPolynomial {
-    let mut rng = rand::thread_rng();
-    BigPolynomial {
-        coeficients: (0..POLY_DEGREE)
-            .map(|_| rng.gen_bigint(bit_size))
-            .collect(),
-    }
-}
+    // --- Setup ---
+    let mut plan = Plan::new(N_POLY, Method::Measure(Duration::from_millis(10)));
 
-fn dcrt_operations_benchmark(c: &mut Criterion) {
-    let mut group = c.benchmark_group("DCRT Operations (Complex Coeffs)");
+    // --- CORREÇÃO APLICADA AQUI ---
+    // A potência é calculada sobre um inteiro (u64) e depois convertida para f64
+    let b_as_f64 = (1u64 << log_b_param) as f64;
+    let context = DcrtContext::new(ARTICLE_PRIMES, gamma, l_param as f64, b_as_f64, N_POLY as f64);
 
-    // Setup 
-    let poly_a = create_random_dcrt();
-    let poly_b = create_random_dcrt();
-    let context = DcrtContext::new(BENCH_PRIMES, 15.0, 10.0, 2.0, POLY_DEGREE as f64);
-    let mut plan = Plan::new(POLY_DEGREE, Method::Measure(Duration::from_millis(10)));
+    let poly_a = BigPolynomial::rand(N_POLY, rho, N_POLY as u32);
+    let poly_b = BigPolynomial::rand(N_POLY, rho, N_POLY as u32);
 
-    group.bench_function("Addition", |b| {
-        b.iter(|| {
-            let _result = black_box(&poly_a) + black_box(&poly_b);
-        })
+    // --- Benchmarks de Conversão ---
+    group.bench_with_input(BenchmarkId::new("to_dcrt", id), &poly_a, |b, p| {
+        b.iter(|| to_dcrt::<N_POLY>(black_box(p), black_box(&context), black_box(&mut plan)))
     });
 
-    group.bench_function("Multiplication", |b| {
-        b.iter(|| {
-            let _result = black_box(&poly_a) * black_box(&poly_b);
-        })
-    });
+    let dcrt_a = to_dcrt::<N_POLY>(&poly_a, &context, &mut plan);
+    let dcrt_b = to_dcrt::<N_POLY>(&poly_b, &context, &mut plan);
 
-    group.bench_function("from_dcrt Conversion", |b| {
+    group.bench_with_input(BenchmarkId::new("from_dcrt", id), &dcrt_a, |b, p| {
         b.iter_batched(
-            || poly_a.clone(),
-            |mut p| from_dcrt::<N>(black_box(&mut p), black_box(&context), black_box(&mut plan)),
+            || p.clone(),
+            |mut p_clone| from_dcrt::<N_POLY>(black_box(&mut p_clone), black_box(&context), black_box(&mut plan)),
             BatchSize::SmallInput,
         )
     });
 
+    // --- Benchmarks de Aritmética DCRT ---
+    group.bench_with_input(BenchmarkId::new("Add (DCRT)", id), &(&dcrt_a, &dcrt_b), |b, (p1, p2)| {
+        b.iter(|| black_box(*p1) + black_box(*p2))
+    });
+    group.bench_with_input(BenchmarkId::new("Mul (DCRT)", id), &(&dcrt_a, &dcrt_b), |b, (p1, p2)| {
+        b.iter(|| black_box(*p1) * black_box(*p2))
+    });
+    
+    // --- Benchmark de Produto Interno ---
+    let dcrt_vec_a: Vec<Dcrt> = (0..big_l).map(|_| dcrt_a.clone()).collect();
+    let dcrt_vec_b: Vec<Dcrt> = (0..big_l).map(|_| dcrt_b.clone()).collect();
+    
+    group.bench_with_input(BenchmarkId::new("Inner Product (DCRT)", id), &(&dcrt_vec_a, &dcrt_vec_b), |b, (v1, v2)| {
+        b.iter(|| inner_product(black_box(v1), black_box(v2)))
+    });
+
+    // --- Benchmark do Produto Externo ---
+    let b_param_u64 = 1u64 << log_b_param;
+    let vector_ct: Vec<Dcrt> = (0..l_param).map(|_| dcrt_a.clone()).collect();
+    let scalar_ct = dcrt_b.clone();
+
+    group.bench_function(BenchmarkId::new("External Product (DCRT)", id), |b| {
+        b.iter_batched(
+            || (vector_ct.clone(), scalar_ct.clone(), plan.clone()),
+            |(v_ct, mut s_ct, mut p)| {
+                external_product::<N_POLY>(
+                    black_box(&v_ct),
+                    black_box(&mut s_ct),
+                    black_box(&context),
+                    black_box(&mut p),
+                    l_param,
+                    b_param_u64,
+                )
+            },
+            BatchSize::SmallInput,
+        )
+    });
+    
     group.finish();
 }
 
-/// Benchmark para operações em polinômios com coeficientes BigInt
-fn big_polynomial_operations_benchmark(c: &mut Criterion) {
-    let mut group = c.benchmark_group("BigPolynomial Operations (Integer Coeffs)");
-
-    // Setup
-    let bit_sizes_to_test = vec![50];
-    let mut plan = Plan::new(POLY_DEGREE, Method::Measure(Duration::from_millis(10)));
-    let context = DcrtContext::new(BENCH_PRIMES, 15.0, 10.0, 2.0, POLY_DEGREE as f64);
-
-    for bit_size in bit_sizes_to_test {
-        let poly_a = create_random_big_poly(bit_size);
-
-        group.bench_with_input(BenchmarkId::new("to_dcrt Conversion", bit_size), &poly_a, 
-            |b, poly| {
-                b.iter(|| to_dcrt::<N>(black_box(poly), black_box(&context), black_box(&mut plan)))
-            }
-        );
-
-        let new_a = to_dcrt::<N>(&poly_a, &context, &mut plan);
-        group.bench_function("Addition fixed", |b| {
-            b.iter(|| {
-                let _result = black_box(&poly_a) + black_box(&poly_a);
-            })
-        });
-    }
-    group.finish();
+// Funções "trampolim" agora passam todos os parâmetros corretos para cada linha
+fn benchmark_row1(c: &mut Criterion) {
+    // Parâmetros da Linha 1: L=114, ℓ=10, log b=24
+    run_benchmarks_for_n::<256>(c, 56, 206.0, 114, 10, 24, "Row 1 (N=256, rho=56)");
 }
 
-fn vector_operations_benchmark(c: &mut Criterion) {
-    let mut group = c.benchmark_group("Vector Operations");
-
-    let vector_lengths = vec![2, 4, 8, 10];
-
-    for l_var in vector_lengths {
-        // Setup:
-        let vec_a: Vec<Dcrt> = (0..l_var).map(|_| create_random_dcrt()).collect();
-        let vec_b: Vec<Dcrt> = (0..l_var).map(|_| create_random_dcrt()).collect();
-        
-        group.bench_with_input(BenchmarkId::new("inner_product", l_var), &l_var, 
-            |b, _| {
-                b.iter(|| inner_product(black_box(&vec_a), black_box(&vec_b)))
-            }
-        );
-    }
-    group.finish();
+fn benchmark_row3(c: &mut Criterion) {
+    // Parâmetros da Linha 3: L=86, ℓ=21, log b=11
+    run_benchmarks_for_n::<128>(c, 69, 204.0, 86, 21, 11, "Row 3 (N=128, rho=69)");
 }
 
-criterion_group!(
-    benches, 
-    dcrt_operations_benchmark, 
-    big_polynomial_operations_benchmark,
-    vector_operations_benchmark
-);
+// Agrupa os benchmarks para execução
+criterion_group!(benches, benchmark_row1, benchmark_row3);
 criterion_main!(benches);
