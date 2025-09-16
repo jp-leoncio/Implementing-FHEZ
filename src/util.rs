@@ -87,6 +87,24 @@ pub fn red_base_poly_hilder<const l: usize>(a: &mut BigPolynomial) -> [BigPolyno
     
 // }
 
+/// Decompõe um BigInt `val` em `l` dígitos na base `b` com sinal.
+/// O resultado é um vetor de BigInts `d` tal que Σ d[i] * b^i ≈ val.
+pub fn signed_base_b_decomposition(val: &BigInt, b: u64, l: usize) -> Vec<BigInt> {
+    let mut digits = Vec::with_capacity(l);
+    let mut current_val = val.clone();
+    let b_big = BigInt::from(b);
+
+    for _ in 0..l {
+        let remainder = &current_val % &b_big;
+        let centered_rem = centered_rem_poly(&BigPolynomial { coeficients: vec![remainder] }, &b_big).coeficients[0].clone();
+        
+        digits.push(centered_rem.clone());
+        current_val = (&current_val - &centered_rem) / &b_big;
+    }
+
+    digits
+}
+
 pub fn sample_poly_uniform_bound(bound: &BigInt, degree: usize) -> BigPolynomial {
     let mut rng = rand::thread_rng();
     let coeficients = (0..degree)
