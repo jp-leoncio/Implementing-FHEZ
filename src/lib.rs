@@ -31,18 +31,3 @@ pub const N: usize = 256;            // N of X^N + 1
 pub const B: f64 = 16777216.0;      // Fixed Base (2^24)
 // pub const gamma: f64 = 206.0;        // Module 2^gamma
 pub const l: usize = 10;            // ceil(log(gamma) with B base)
-
-/*
- * TODO:
- * [] Fazer o produto externo
- * [d] Gerar benchmarks com os valores do artigo
- * [] Verificar o tempo do "Refresh"
- * 
- * No prod externo, a soma pode explodir o tamanho do DCRT, mas dá pra calcular 
- * qnts operações demoraria pra fazer.
- *    - Se pensar em bits, seria pegar o pior caso que é ter uma soma que gera um 
- *      novo bit com um carry, e calcular quantas demoraria pra isso acontecer denovo.
- * 
- * Na multiplicação do DCRT, há um problema parecido, porque os números terão até
- * log(len(PRIME)) bits, caso seja 20 bits e o número aguentar 32 bits, dá ruim.
- */
