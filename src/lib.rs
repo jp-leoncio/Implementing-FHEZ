@@ -7,7 +7,7 @@
 #![allow(dead_code)]
 
 pub mod big_polynomial;
-// pub mod bootstrap;
+pub mod bootstrap;
 pub mod dcrt;
 pub mod gahe;
 pub mod params;
@@ -15,7 +15,7 @@ pub mod prelude;
 pub mod util;
 
 pub use big_polynomial::*;
-// pub use bootstrap::*;
+pub use bootstrap::*;
 pub use dcrt::*;
 pub use gahe::*;
 pub use params::*;

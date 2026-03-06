@@ -1,5 +1,5 @@
 pub use crate::big_polynomial::*;
-// pub use crate::bootstrap::*;
+pub use crate::bootstrap::*;
 pub use crate::dcrt::*;
 pub use crate::gahe::*;
 pub use crate::params::*;
